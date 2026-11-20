@@ -442,6 +442,7 @@ const DICT={it:{
  'menu.tackle':"Contrasto",
  'menu.gkOut':"Uscita / contrasto",
  'menu.tackleH':"{a} dadi contro dribbling {b}",
+ 'menu.rushH':" · in corsa: −1 dado, più falli se di lato",
  'menu.done':"Fatto ✓",
  'menu.stayStill':"Resta fermo",
  'menu.keep':"Tieni palla ✓",
@@ -477,6 +478,7 @@ const DICT={it:{
  'zone.infoV':" Il +N indica quanto la zona complica la parata.",
  'int.leggero':"Leggero",'int.medio':"Medio",'int.forte':"Forte",'int.tattico':"<b>Fallo tattico</b> · sempre fallo, giallo con d6 4+",
  'int.title':"{p}: che contrasto?",
+ 'int.rush':"Arrivi in corsa: un dado in meno e, se lo prendi di lato o da dietro, più rischio di fallo. ",
  'int.opt':"<b>{n}</b> · {d} dadi · fallo con {f} uni · giallo {y} · rosso {r}",
  'int.behind':"<b>Da dietro</b>: soglie di fallo ridotte di 1. ",
  'int.info':"Contrasto {c} contro Dribbling {d} di {p}. Più dadi tiri, più facilmente escono gli 1.",
@@ -486,6 +488,7 @@ const DICT={it:{
  'car.titleLancio':"{p}: lancio caricato",
  'car.shoot':"◎ <b>Tira</b> · scegli la zona della porta",
  'car.launch':"⤴ <b>Lancia</b> · clic sul punto di arrivo",
+ 'car.giro':"↪ <b>Tiro a giro</b> · aggira i corpi e la barriera, mira solo agli angoli, meno potente",
  'car.finta':"↯ <b>Finta</b> · poi passaggio, piatto o tieni palla",
  'af.title':"Dopo la finta",
  'af.info':"Ogni giocata dopo la finta ha +1 di difficoltà.",
@@ -537,6 +540,8 @@ const DICT={it:{
  'dice.tactical':"Fallo tattico: cartellino?",
  'dice.tackle':"{p} · Contrasto {i}",
  'dice.behind':" (da dietro)",
+ 'dice.side':" (di lato)",
+ 'dice.rush':" (−1 in corsa)",
  'dice.momentum':" (+1 slancio)",
  'dice.dribble':"{p} · Dribbling",
  'dice.protect':"{p} · Protezione",
@@ -668,6 +673,22 @@ const DICT={it:{
  'sub.fintaOk':"Finta riuscita: {p} è sbilanciato",
  'sub.fintaKo':"{p} non abbocca alla finta",
  'sub.restart':"{r} per i {team}",
+ 'sub.giro':"{p} calcia a giro...",
+ 'zone.titleGiro':"Tiro a giro: scegli l'angolo",
+ 'zone.infoGiro':" A giro la palla aggira i corpi sulla linea (conta solo la barriera vicina). Dadi di potenza: {pot}. Più difficile da parare se angolata, ma con un dado di troppo poco va fuori più facilmente.",
+ 'log.shotGiro':"{p} calcia a giro verso {z} da {m} m.",
+ 'dice.precGiro':"{p} · Precisione a giro",
+ 'dice.powGiro':"{p} · Potenza a giro",
+ 'dice.wallJump':"{p} · Salto in barriera",
+ 'log.overWall':"La palla scavalca {p}.",
+ 'log.sdGiro':" + effetto a giro {n}",
+ 'res.wideGiro':"Il giro non rientra",
+ 'res.wideGiroMsg':"Il pallone curva troppo poco e finisce fuori.",
+ 'dice.gkHigh':"{p} · Presa alta (con le mani)",
+ 'dice.reflexWeak':"{p} · Presa",
+ 'log.saveWeak':"Il pallone finisce nello specchio ma senza forza: {p} lo blocca.",
+ 'sub.saveWeak':"Palla verso la porta senza forza: {p} la blocca",
+ 'res.goalWeak':"Il pallone finisce in rete: il portiere era fuori dai pali.",
  // Avvisi
  'toast.ballPhase':"Fase palla",
  'toast.turn':"Turno {n} · {who}",
@@ -828,6 +849,9 @@ const DICT={it:{
  'help.9':"<b>Rigore</b>: il portiere sceglie in segreto il lato. Se indovina ha un dado in più, altrimenti uno solo. <b>Cartellini</b>: due gialli o un rosso = espulsione.",
  'help.10':"<b>Partita 11 contro 11</b>: campo intero, due tempi, risultato. Ogni turno puoi attivare un numero limitato di calciatori; gli altri si muovono da soli seguendo il modulo e la tattica (in fase palla). I blu attaccano verso l'alto, i rossi verso il basso, per tutta la partita.",
  'help.12':"<b>Dribbling</b>: con la palla, se hai un avversario adiacente davanti e lo spazio dietro di lui è libero, scegli Dribbling e clicca l'avversario: Dribbling contro Contrasto. Vale anche dopo una conduzione, se ti restano almeno 2 punti di movimento; se arrivi in corsa hai +1 dado (slancio). Se vinci salti nell'esagono oltre di lui, che resta sbilanciato, e puoi ancora passare o tirare.",
+ 'help.13':"<b>Contrasto</b>: se sei adiacente al portatore e lo hai davanti, scegli Contrasto (anche subito dopo esserti mosso). Contrasto contro Dribbling, i 1 possono diventare fallo. Se arrivi in corsa hai −1 dado e, se lo prendi di lato o da dietro, rischi di più il fallo. Se perdi resti sbilanciato.",
+ 'help.14':"<b>Tiro a giro</b>: da fuori area, tra 16 e 36 m, carica il tiro e scegli Tiro a giro. Mira solo agli angoli e scavalca i corpi sulla linea, tranne la barriera vicina (che salta). È meno potente: il portiere ben piazzato para più spesso e, se la precisione manca di poco, il pallone non rientra e va fuori.",
+ 'help.15':"<b>Ordini (11 contro 11)</b>: un giocatore che sposti a mano tiene la posizione che gli hai dato e scorre con la squadra seguendo la palla, finché la tua squadra ha il possesso. Quando l'avversario conquista palla l'ordine si cancella e il giocatore rientra nel suo ruolo, con i tempi della sua corsa (girarsi costa).",
  'help.11':"<b>Modalità</b>: il gioco è pensato per <b>due persone</b> sullo stesso schermo. L'<b>allenamento</b> mette il computer dall'altra parte per imparare e provare situazioni. Il <b>Tutorial</b> spiega le regole in nove lezioni."
 }};
 let LANG='it';try{const l=localStorage.getItem(LANGK);if(l&&DICT[l])LANG=l}catch(e){}
@@ -1036,13 +1060,17 @@ function choose(title,body,opts,cls){return new Promise(res=>{const B=openModal(
 const ZONES=[{k:'AS',v:2,r:0,c:0},{k:'AC',v:1,r:0,c:1},{k:'AD',v:2,r:0,c:2},{k:'BS',v:1,r:1,c:0},{k:'BC',v:0,r:1,c:1},{k:'BD',v:1,r:1,c:2}];
 const zn=z=>tr('zone.'+z.k);
 const PIATTO_MAX=10, PIATTO_POT=3, NOW_MAX=10;
-const precPool=(p,piatto)=>piatto?Math.max(p.st.tiroPrec,p.st.passCorto):p.st.tiroPrec;
+const precPool=(p,m)=>m==='giro'?Math.max(p.st.tiroPrec,p.st.lancio):m?Math.max(p.st.tiroPrec,p.st.passCorto):p.st.tiroPrec;
+// Tiro a giro: solo da fuori area, tra 16 e 36 m
+let GIRO_EFF=1;const GIRO_MIN=8,GIRO_MAX=18,GIRO_Z=[0,2,3,5];
+const canGiro=p=>{const d=dG(p,p.team);return d>=GIRO_MIN&&d<=GIRO_MAX&&!inAreaOf(p,other(p.team))};
+const giroPow=p=>Math.max(1,Math.ceil((p.st.tiroPot+p.st.lancio)/2)-2-Math.floor(dG(p,p.team)/10));
 const precDiff=(p,z,extra)=>1+Math.floor(dG(p,p.team)/8)+pressure(p)+extra+(z&&z.r===0?1:0);
-function chooseZone(p,piatto,extra=0,penalty=false){return new Promise(res=>{const d=dG(p,p.team),pp=precPool(p,piatto);
+function chooseZone(p,piatto,extra=0,penalty=false,giro=false){return new Promise(res=>{const d=dG(p,p.team),pp=precPool(p,giro?'giro':piatto);
   const lo=penalty?1:precDiff(p,ZONES[4],extra),hi=penalty?2:precDiff(p,ZONES[0],extra);
-  const info=tr(penalty?'zone.infoPen':'zone.info',{m:d*2,n:pp,lo,plo:pct(pAtLeast(pp,lo))})+(piatto?tr('zone.infoPiatto',{pot:PIATTO_POT}):tr('zone.infoHigh',{hi,phi:pct(pAtLeast(pp,hi))}))+tr('zone.infoV');
-  const B=openModal(tr(penalty?'zone.titlePen':piatto?'zone.titlePiatto':'zone.title'),`<div class="hint">${info}</div>`,'zones');
-  ZONES.forEach(z=>{if(piatto&&z.r===0){B.appendChild(document.createElement('div'));return}
+  const info=tr(penalty?'zone.infoPen':'zone.info',{m:d*2,n:pp,lo,plo:pct(pAtLeast(pp,lo))})+(piatto?tr('zone.infoPiatto',{pot:PIATTO_POT}):tr('zone.infoHigh',{hi,phi:pct(pAtLeast(pp,hi))}))+(giro?tr('zone.infoGiro',{pot:giroPow(p)}):'')+tr('zone.infoV');
+  const B=openModal(tr(penalty?'zone.titlePen':giro?'zone.titleGiro':piatto?'zone.titlePiatto':'zone.title'),`<div class="hint">${info}</div>`,'zones');
+  ZONES.forEach((z,i)=>{if((piatto&&z.r===0)||(giro&&!GIRO_Z.includes(i))){B.appendChild(document.createElement('div'));return}
     const b=document.createElement('button');b.innerHTML=`${zn(z)}<br><small>+${z.v}</small>`;
     b.onclick=()=>{closeModal();res(z)};B.appendChild(b)})})}
 function pickTarget(p,kind,extra,msg){return new Promise(res=>{UI.wait={p,kind,extra,msg,resolve:res};G.busy=false;render()})}
@@ -1051,10 +1079,11 @@ function validTarget(tg,h){if(!inField(h)||same(h,tg.p))return false;
   if(tg.now){const q=playerAt(h);return !!q&&q.team===tg.p.team&&hd(tg.p,h)<=NOW_MAX}
   return hd(tg.p,h)<=tRange(tg.kind,tg.p)}
 const INT={leggero:{mod:-1,f:4,y:99,r:99},medio:{mod:0,f:3,y:4,r:99},forte:{mod:2,f:2,y:3,r:4},tattico:{}};
-function chooseIntensity(def,att){const behind=angDiff(angTo(att,def),dirAng(att.f))>90,b=behind?1:0;
+function chooseIntensity(def,att){const ang=angDiff(angTo(att,def),dirAng(att.f)),behind=ang>90;
+  const rush=!!(G.act&&G.act.p===def&&G.act.moved&&def.state==='corsa'),b=(behind?1:0)+(rush&&ang>30?1:0),rm=rush?1:0;
   const th=v=>v>=99?'—':Math.max(1,v-b);
-  const opt=k=>{const I=INT[k];return{k,t:tr('int.opt',{n:tr('int.'+k),d:Math.max(1,def.st.contrasto+I.mod),f:th(I.f),y:th(I.y),r:th(I.r)})}};
-  return choose(tr('int.title',{p:nm(def)}),`<div class="hint">${behind?tr('int.behind'):''}${tr('int.info',{c:def.st.contrasto,d:att.st.dribbling,p:nm(att)})}</div>`,
+  const opt=k=>{const I=INT[k];return{k,t:tr('int.opt',{n:tr('int.'+k),d:Math.max(1,def.st.contrasto+I.mod-rm),f:th(I.f),y:th(I.y),r:th(I.r)})}};
+  return choose(tr('int.title',{p:nm(def)}),`<div class="hint">${behind?tr('int.behind'):''}${rush?tr('int.rush'):''}${tr('int.info',{c:def.st.contrasto,d:att.st.dribbling,p:nm(att)})}</div>`,
     [opt('leggero'),opt('medio'),opt('forte'),{k:'tattico',t:tr('int.tattico')}])}
 function humanPlace(team,data){return new Promise(res=>{UI.placeWait={team,res,R:data.R};UI.placeSel=null;G.busy=false;render()})}
 async function ask(team,kind,data){
@@ -1062,9 +1091,9 @@ async function ask(team,kind,data){
   switch(kind){
     case'intensity':return chooseIntensity(data.def,data.att);
     case'carica':{const com=data.committed.map(nm);const info=`<div class="hint">${tr('car.committed',{l:com.length?com.join(', '):tr('car.nobody')})}</div>`;
-      return data.type==='tiro'?choose(tr('car.titleTiro',{p:nm(data.p)}),info,[{k:'go',t:tr('car.shoot')},{k:'finta',t:tr('car.finta')}])
+      return data.type==='tiro'?choose(tr('car.titleTiro',{p:nm(data.p)}),info,[{k:'go',t:tr('car.shoot')},...(canGiro(data.p)?[{k:'giro',t:tr('car.giro')}]:[]),{k:'finta',t:tr('car.finta')}])
         :choose(tr('car.titleLancio',{p:nm(data.p)}),info,[{k:'go',t:tr('car.launch')},{k:'finta',t:tr('car.finta')}])}
-    case'zone':return chooseZone(data.p,data.piatto,data.extra||0,data.penalty);
+    case'zone':return chooseZone(data.p,data.piatto,data.extra||0,data.penalty,data.giro);
     case'target':return pickTarget(data.p,data.kind,data.extra||0,data.msg);
     case'afterFinta':{const o2=[{k:'pass',t:tr('af.pass')}];if(data.piatto)o2.push({k:'piatto',t:tr('af.piatto')});o2.push({k:'keep',t:tr('af.keep')});
       return choose(tr('af.title'),`<div class="hint">${tr('af.info')}</div>`,o2)}
@@ -1101,7 +1130,14 @@ function rotate(a,s){const p=a.p;const cost=a.rotFree?0:1;
   if(!a.moved){if(cost>ptsFor(a).sc)return false;a.spent+=cost;if(cost>0)p.state='fermo';a.opts=moveOptions(a)}
   else{if(cost>a.rem)return false;a.rem-=cost;if(cost>0)p.state='fermo'}
   a.rotFree=false;a.used=true;p.f=(p.f+s+6)%6;ev('rotate',{by:p.tpl});return true}
-async function endActivation(){const a=G.act;if(!a)return;closeMenu();a.p.act=true;G.actCount++;G.actN[a.p.team]++;if(G.restart&&G.restart.kicker===a.p.id)G.restart=null;G.act=null;UI.mode=null;await nextTeam()}
+// Ordini: il giocatore mosso a mano tiene la posizione (come scarto dalla sua base) finché la sua squadra ha il possesso
+function autoPlan(team){const poss=possTeam()===team&&!!holderP()||(!holderP()&&possTeam()===team);
+  return{poss,plan:poss?attackShape(team):defPlan(defS(team),team)}}
+const curPoss=()=>G.possT||possTeam();
+function saveOrder(p){if(!G.full||p.gk||G.ctrl[p.team]!=='human'||isHolder(p)||!p.act)return;
+  const tg=autoPlan(p.team).plan[p.id];if(!tg){p.order=null;return}
+  const a=axToOff(p.q,p.r),b=axToOff(tg.q,tg.r);p.order={dc:a.c-b.c,dr:a.r-b.r,pt:curPoss()}}
+async function endActivation(){const a=G.act;if(!a)return;closeMenu();a.p.act=true;saveOrder(a.p);G.actCount++;G.actN[a.p.team]++;if(G.restart&&G.restart.kicker===a.p.id)G.restart=null;G.act=null;UI.mode=null;await nextTeam()}
 async function nextTeam(){if(G.over){render();return}const o=other(G.cur),prev=G.cur;
   if(!G.passed[o]&&canAct(o))G.cur=o;else if(!G.passed[G.cur]&&canAct(G.cur)){}else{await ballPhase();return}
   if(G.cur!==prev)toast(teamLabel(G.cur),G.cur);
@@ -1136,7 +1172,7 @@ async function actDribble(a,o){const p=a.p;const beyond={q:2*o.q-p.q,r:2*o.r-p.r
   if(res==='att'){p.q=beyond.q;p.r=beyond.r;p.f=dirTo(p,tgt(p.team));a.moved=a.used=true;a.rem=0;p.moved=true;log(tr('log.dribbleOk',{p:nm(p),o:nm(o)}));sub(tr('sub.dribbleOk',{p:nm(p),o:nm(o)}),p.team);render();return true}
   if(await settle()==='ok'&&!G.over)await endActivation();else render();return false}
 async function actTackle(a){const p=a.p,h=holderP();G.busy=true;render();const k=await ask(p.team,'intensity',{def:p,att:h});
-  const res=await tackle(p,h,k,false);ev('tackle',{int:k,out:res,by:p.tpl});G.busy=false;if(await settle()==='ok'&&!G.over)await endActivation();else render()}
+  const rush=!!(a.moved&&p.state==='corsa');const res=await tackle(p,h,k,false,0,rush);ev('tackle',{int:k,out:res,by:p.tpl,rush});G.busy=false;if(await settle()==='ok'&&!G.over)await endActivation();else render()}
 
 // ===================== Palla =====================
 function gainBall(q,why){
@@ -1144,16 +1180,21 @@ function gainBall(q,why){
     log(tr('log.offside',{p:nm(q)}));sub(tr('sub.offside',{p:nm(q)}),q.team);ev('offside',{by:q.tpl});
     if(!G.full)return endAction(tr('res.offside'),tr('res.offsideMsg',{p:nm(q)}),'fuorigioco');
     return restartFor(other(q.team),'punizione',pos,{indirect:true})}
-  const prevTeam=G.lastTouch;G.ball={holder:q.id,pos:null,flight:null};G.lastTouch=q.team;log(tr('log.gain',{p:nm(q),w:why||tr('why.control')}));
+  const prevTeam=G.lastTouch;G.ball={holder:q.id,pos:null,flight:null};G.lastTouch=q.team;G.possT=q.team;log(tr('log.gain',{p:nm(q),w:why||tr('why.control')}));
   if(G.subWhy){sub(G.subWhy,q.team);G.subWhy=null}
   if(!G.full&&q.team==='D'){endAction(tr(q.gk?'res.gkCatch':'res.recovered'),tr('res.recoveredMsg',{p:nm(q)}),'recupero');return}
   if(G.full&&prevTeam!==q.team){toast(tr('toast.possession',{team:teamWord(q.team)}),q.team);ev('turnover',{team:q.team})}}
 function restartFor(team,type,spot,extra){
   if(!G.full&&team==='D'){const msg={fondo:'res.goalKick',laterale:'res.throwDef',punizione:'res.freeDef'}[type]||'res.lost';return endAction(tr('res.out'),tr(msg),'perso')}
   G.pendingRestart=Object.assign({type,team,spot},extra||{})}
-async function outOfPlay(h){const o=axToOff(h.q,h.r);G.ball={holder:null,pos:null,flight:null};if(!FASTM())BALL.vis.target=px(h);
+async function outOfPlay(h,weak=false){const o=axToOff(h.q,h.r);G.ball={holder:null,pos:null,flight:null};if(!FASTM())BALL.vis.target=px(h);
   const top=o.r<0,bottom=FULL&&o.r>=H;
   if(top||bottom){const def=top?'D':'A',att=other(def);
+    if(o.c>=17&&o.c<=21&&weak){const gk=gkOf(def);
+      // passaggio o lancio impreciso che finisce nello specchio: è un tiro debole
+      if(gk&&!isSb(gk)&&hd(gk,tgt(att))<=2){const r=roll(gk.st.riflessi,tr('dice.reflexWeak',{p:nm(gk)}),1);
+        if(r.succ>=1){log(tr('log.saveWeak',{p:nm(gk)}));G.subWhy=tr('sub.saveWeak',{p:nm(gk)});return gainBall(gk,tr('why.save'))}}
+      ev('goal',{kind:'lancio',team:att});return goalScored(att,tr('res.goalWeak'))}
     if(o.c>=17&&o.c<=21){const gk=gkOf(def);
       if(gk&&!isSb(gk)&&hd(gk,tgt(att))<=2){const r=roll(gk.st.riflessi,tr('dice.reflex',{p:nm(gk)}),3);if(r.succ>=3){log(tr('log.saveCorner',{p:nm(gk)}));G.lastTouch=def}else return deflGoal(att)}
       else return deflGoal(att)}
@@ -1220,12 +1261,14 @@ async function resolvePass(p,target,kind,extra=0){
   return reception(fin,kind,I.d,tried)}
 
 async function reception(fin,kind,dist,tried){tried=tried||new Set();
-  if(!inField(fin))return outOfPlay(fin);
-  const c=G.players.filter(q=>!isSb(q)&&!tried.has(q.id)&&hd(q,fin)<=1);
+  if(!inField(fin))return outOfPlay(fin,true);
+  // il portiere esce sui palloni alti nella sua area: fino a 2 esagoni, con le mani
+  const gkReach=q=>q.gk&&kind==='lancio'&&inAreaOf(fin,q.team)&&hd(q,fin)<=2;
+  const c=G.players.filter(q=>!isSb(q)&&!tried.has(q.id)&&(hd(q,fin)<=1||gkReach(q)));
   if(!c.length){log(tr('log.nobody'));sub(tr('sub.nobody'));return setLoose(fin)}
   const base=kind==='lancio'?3:(dist>10?2:1);let best=null,bm=-99,tie=false;
-  for(const q of c){const on=same(q,fin),diff=base+pressure(q);
-    const r=roll(q.st.stop-(on?0:1),tr(kind==='lancio'?'dice.stopHigh':'dice.stop',{p:nm(q)}),diff);const m=r.succ-diff;
+  for(const q of c){const on=same(q,fin),hands=gkReach(q),far=hd(q,fin)===2,diff=(hands?2:base)+pressure(q);
+    const r=roll(q.st.stop-(on?0:1)+(hands?1:0)-(far?1:0),hands?tr('dice.gkHigh',{p:nm(q)}):tr(kind==='lancio'?'dice.stopHigh':'dice.stop',{p:nm(q)}),diff);const m=r.succ-diff;
     if(m>bm){bm=m;best=q;tie=false}else if(m===bm&&best.team!==q.team)tie=true}
   if(bm<0){log(tr('log.badControl'));return rebound(fin,null,tr('sub.badControl'))}
   if(tie){log(tr('log.contested'));return rebound(fin,null,tr('sub.contested'))}
@@ -1233,11 +1276,13 @@ async function reception(fin,kind,dist,tried){tried=tried||new Set();
   G.subWhy=tr('sub.received',{p:nm(best)});gainBall(best,tr('why.control'))}
 
 // Tiro: geometria (corpi vicino alla linea, posizione del portiere)
-function shotGeo(from,team,z){const tg=zoneHex(z,team),goal=tgt(team),path=line(from,tg),high=z.r===0;
+function shotGeo(from,team,z,giro=false){const tg=zoneHex(z,team),goal=tgt(team),path=line(from,tg),high=z.r===0;
   const blockers=[];let cover=0;
   for(const o of G.players){if(o.team===team||o.gk||isSb(o))continue;let best=null;
     for(let i=1;i<path.length;i++){const dd=hd(o,path[i]);if(dd<=1&&(best===null||dd<best.dd))best={dd,i}}
     if(!best)continue;
+    // a giro la palla aggira i corpi: contano solo quelli sulla linea vicino a chi calcia (la barriera)
+    if(giro){if(best.dd===0&&hd(o,from)<=6)blockers.push({o,dd:0,i:best.i,wall:true});continue}
     if(best.dd===0||(best.dd===1&&!high&&inFront(o,path[best.i]))){if(!high||hd(o,from)<=2)blockers.push({o,dd:best.dd,i:best.i})}
     if(best.dd===0)cover++}
   blockers.sort((a,b)=>a.i-b.i);
@@ -1248,14 +1293,17 @@ function shotGeo(from,team,z){const tg=zoneHex(z,team),goal=tgt(team),path=line(
     gkInfo={none:false,md,out,beaten,empty:beaten||(md>=3&&mc>=3),piaz:mc===0?-1:mc===1?0:mc===2?1:2,adv:out>=3}}
   return{tgt:tg,path,blockers,cover:high?0:Math.min(2,cover),gk:gkInfo}}
 const proxBonus=d=>d<=3?3:d<=5?2:d<=6?1:0;
-async function resolveShot(p,z,extra,piatto,kind){const team=p.team,def=other(team);
-  const d=dG(p,team),pd=precDiff(p,z,extra);const xg=estShot(p,p,z,piatto,extra);
-  log(tr(piatto?'log.shotPiatto':'log.shot',{p:nm(p),z:zn(z).toLowerCase(),m:d*2}));G.ball={holder:null,pos:null,flight:null};G.lastTouch=team;
-  const SE=out=>ev('shot',{kind:kind||(piatto?'piatto':'tiro'),d,xg:+xg.toFixed(3),out,by:p.tpl,zone:z.k,team});
-  const P=roll(precPool(p,piatto),tr(piatto?'dice.precPiatto':'dice.prec',{p:nm(p)}),pd);const m=P.succ-pd;
-  const PW=roll(piatto?PIATTO_POT:Math.max(1,p.st.tiroPot-Math.floor(d/10)),tr(piatto?'dice.powPiatto':'dice.pow',{p:nm(p)}),null);
-  const geo=shotGeo(p,team,z);const fast=!piatto;
+async function resolveShot(p,z,extra,piatto,kind){const team=p.team,def=other(team);const giro=piatto==='giro';if(giro)piatto=false;
+  const d=dG(p,team),pd=precDiff(p,z,extra);const xg=estShot(p,p,z,giro?'giro':piatto,extra);
+  log(tr(giro?'log.shotGiro':piatto?'log.shotPiatto':'log.shot',{p:nm(p),z:zn(z).toLowerCase(),m:d*2}));if(giro)sub(tr('sub.giro',{p:nm(p)}),team);G.ball={holder:null,pos:null,flight:null};G.lastTouch=team;
+  const SE=out=>ev('shot',{kind:kind||(giro?'giro':piatto?'piatto':'tiro'),d,xg:+xg.toFixed(3),out,by:p.tpl,zone:z.k,team});
+  const P=roll(precPool(p,giro?'giro':piatto),tr(giro?'dice.precGiro':piatto?'dice.precPiatto':'dice.prec',{p:nm(p)}),pd);const m=P.succ-pd;
+  const PW=roll(giro?giroPow(p):piatto?PIATTO_POT:Math.max(1,p.st.tiroPot-Math.floor(d/10)),tr(giro?'dice.powGiro':piatto?'dice.powPiatto':'dice.pow',{p:nm(p)}),null);
+  const geo=shotGeo(p,team,z,giro);const fast=!piatto&&!giro;
   for(const b of geo.blockers){const o=b.o;
+    if(b.wall){if(m>=1){log(tr('log.overWall',{p:nm(o)}));continue}
+      const r=roll(o.st.intercetto-2,tr('dice.wallJump',{p:nm(o)}),2);if(r.succ<2){log(tr('log.overWall',{p:nm(o)}));continue}
+      G.lastTouch=def;await animBall(px(o),{});log(tr('log.deflected',{p:nm(o)}));SE('murato');return deflect(o,'murato',o,0,tr('sub.blocked',{p:nm(o)}))}
     if(b.dd===0){if(m>=2){log(tr('log.shotGap',{p:nm(o)}));continue}
       if(rollD6(tr('dice.legs',{p:nm(o)}))===6){log(tr('log.throughLegs'));continue}}
     const r=roll(o.st.intercetto-(b.dd===1?1:0),tr(b.dd?'dice.close':'dice.block',{p:nm(o)}),2);
@@ -1263,6 +1311,7 @@ async function resolveShot(p,z,extra,piatto,kind){const team=p.team,def=other(te
       if(r.succ>=2){log(tr('log.blocked',{p:nm(o)}));SE('murato');return deflect(o,'murato',o,0,tr('sub.blocked',{p:nm(o)}))}
       log(tr('log.deflected',{p:nm(o)}));SE('deviato');return deflect(o,'tiro',o,PW.succ,tr('sub.deflected',{p:nm(o)}))}}
   let zone=z;const M=zz=>mouth(zz,team);
+  if(giro&&(m===-1&&d6()<=3||m===-2&&d6()<=4)){await animBall({x:CX+(team==='A'?1:-1)*(z.c-1)*6*KM,y:team==='A'?PL.T-2*KM:PL.B+2*KM},{});SE('fuori');return missed(team,tr('res.wideGiro'),tr('res.wideGiroMsg'))}
   if(m===-1){
     if(z.r===0&&d6()<=3){await animBall({x:M(z).x,y:team==='A'?PL.T-3*KM:PL.B+3*KM},{fast});SE('fuori');return missed(team,tr('res.overBar'),tr('res.overBarMsg'))}
     const adj=ZONES.filter(q=>Math.abs(q.r-z.r)+Math.abs(q.c-z.c)===1&&!(piatto&&q.r===0));zone=adj[(d6()-1)%adj.length];log(tr('log.slightly',{z:zn(zone).toLowerCase()}))}
@@ -1271,10 +1320,10 @@ async function resolveShot(p,z,extra,piatto,kind){const team=p.team,def=other(te
   const gk=gkVs(team),gi=geo.gk;
   if(gi.none||gi.empty){await animBall(M(zone),{fast});SE('gol');
     return goalScored(team,tr(gi.none?'res.goalNoGk':gi.down?'res.goalGkDown':gi.beaten?'res.goalGkBeaten':'res.goalEmpty',{p:nm(p),c:clock()}))}
-  const dm=Math.floor(Math.max(0,d-10)/5),advMod=gi.adv?(zone.r===0?2:-1):0,prox=proxBonus(d);
-  const pdiff=Math.max(0,PW.succ+zone.v+geo.cover+gi.piaz+advMod+prox-dm);
+  const dm=Math.floor(Math.max(0,d-10)/5),advMod=gi.adv?(zone.r===0?2:-1):0,prox=proxBonus(d),eff=giro?GIRO_EFF:0;
+  const pdiff=Math.max(0,PW.succ+zone.v+geo.cover+gi.piaz+advMod+prox+eff-dm);
   log(tr('log.saveDiff',{n:pdiff,pw:PW.succ,z:zone.v})+(geo.cover?tr('log.sdCover',{n:geo.cover}):'')+tr(gi.piaz>=0?'log.sdPosPlus':'log.sdPosMinus',{n:Math.abs(gi.piaz)})
-    +(advMod>0?tr('log.sdLob'):advMod<0?tr('log.sdAtGk'):'')+(prox?tr('log.sdProx',{n:prox}):'')+(dm?tr('log.sdDist',{n:dm}):'')+'.');
+    +(advMod>0?tr('log.sdLob'):advMod<0?tr('log.sdAtGk'):'')+(prox?tr('log.sdProx',{n:prox}):'')+(eff?tr('log.sdGiro',{n:eff}):'')+(dm?tr('log.sdDist',{n:dm}):'')+'.');
   const R=roll(gk.st.riflessi,tr('dice.save',{p:nm(gk)}),pdiff);const mm=R.succ-pdiff;
   if(mm>=0)await animBall(px(gk),{fast});else await animBall(M(zone),{fast});
   if(mm>=2){SE('parata');if(!G.full){sub(tr('sub.saveHold',{p:nm(gk)}),def);G.ball={holder:gk.id,pos:null,flight:null};return endAction(tr('res.save'),tr('res.saveMsg',{p:nm(gk)}),'parata')}
@@ -1290,10 +1339,12 @@ function foul(def,att,card){let red=card==='rosso';
   sub(tr('sub.foul',{d:nm(def),a:nm(att),r:tr(area?'rn.rigore':'rn.punizione').toLowerCase()})+(card?' · '+tr('sub.card',{c:tr(red&&card!=='rosso'?'card.doubleYellow':'card.'+card)}):''),att.team);
   ev('foul',{by:def.tpl,card:red?'rosso':(card||''),area});
   if(red){log(tr('log.sentOff',{p:nm(def)}));G.players=G.players.filter(x=>x!==def);if(!FASTM())buildPlayers()}}
-async function tackle(def,att,k,isDribble,bonus=0){
-  const behind=angDiff(angTo(att,def),dirAng(att.f))>90,b=behind?1:0;
+async function tackle(def,att,k,isDribble,bonus=0,rush=false){
+  const ang=angDiff(angTo(att,def),dirAng(att.f)),behind=ang>90,side=ang>30;
+  // In corsa: -1 dado; se arrivi di lato o da dietro anche più rischio di fallo
+  const b=(behind?1:0)+(rush&&side?1:0),rm=rush?1:0;
   if(k==='tattico'){const v=rollD6(tr('dice.tactical'));foul(def,att,v>=4?'giallo':null);return'foul'}
-  const I=INT[k]||INT.medio;const D=roll(def.st.contrasto+I.mod,tr('dice.tackle',{p:nm(def),i:tr('int.'+k).toLowerCase()})+(behind?tr('dice.behind'):''),null);
+  const I=INT[k]||INT.medio;const D=roll(Math.max(1,def.st.contrasto+I.mod-rm),tr('dice.tackle',{p:nm(def),i:tr('int.'+k).toLowerCase()})+(behind?tr('dice.behind'):side&&rush?tr('dice.side'):'')+(rush?tr('dice.rush'):''),null);
   const A=roll(att.st.dribbling+bonus,tr(isDribble?'dice.dribble':'dice.protect',{p:nm(att)})+(bonus?tr('dice.momentum'):''),null);
   if(D.ones>=I.f-b){const card=D.ones>=I.r-b?'rosso':D.ones>=I.y-b?'giallo':null;foul(def,att,card);return'foul'}
   if(D.succ>A.succ){G.subWhy=tr('sub.tackleWon',{d:nm(def),a:nm(att)});gainBall(def,tr('why.tackle'));return'def'}
@@ -1321,10 +1372,15 @@ function attackShape(team){const res={},ball=ballHex()||kickSpot(),S=attS(team),
     let a=anchor(p,ball,S,false),k=0;while(depth(a,team)>L&&k<25){a=add(a,backDir(team));k++}
     res[p.id]=a}
   return res}
-function teamAutoMove(team){if(!G.full)return;const poss=possTeam()===team&&!!holderP()||(!holderP()&&possTeam()===team);
-  const ball=ballHex()||kickSpot();const plan=poss?attackShape(team):defPlan(defS(team),team);
+function teamAutoMove(team){if(!G.full)return;const {poss,plan}=autoPlan(team);
+  const ball=ballHex()||kickSpot(),loose=G.ball.pos||(G.ball.flight&&G.ball.flight.h),L=poss?offsideLine(team):null;
   G.quiet=true;
-  for(const p of G.players){if(p.team!==team||p.act||isSb(p)||isHolder(p))continue;const tg=plan[p.id];if(!tg)continue;
+  for(const p of G.players){if(p.team!==team||p.act||isSb(p)||isHolder(p))continue;let tg=plan[p.id];if(!tg)continue;
+    if(p.order&&p.order.pt!==curPoss())p.order=null;
+    if(p.order&&!(loose&&same(tg,loose))){const b=axToOff(tg.q,tg.r);
+      let h=offToAx(Math.max(0,Math.min(W-1,b.c+p.order.dc)),Math.max(0,Math.min(H-1,b.r+p.order.dr))),k=0;
+      if(poss)while(depth(h,team)>L&&k<25){h=add(h,backDir(team));k++}
+      if(inField(h))tg=h}
     const a={p,moved:false,used:false,rotFree:true,spent:0,rem:0};a.opts=moveOptions(a);aiMoveToward(a,tg,ball)}
   G.quiet=false}
 
@@ -1344,6 +1400,7 @@ async function ballPhase(){const g=G;G.phase='palla';G.busy=true;G.act=null;UI.m
 async function caricaPhase(){const g=G;const p=byId(G.carica.id);const type=G.carica.type;G.carica=null;if(!p||!isHolder(p))return;
   const committed=G.players.filter(q=>q.team!==p.team&&q.committed&&!isSb(q));
   const c=await ask(p.team,'carica',{p,type,committed});if(G!==g)return;
+  if(c==='giro'){const z=await ask(p.team,'zone',{p,giro:true});if(G!==g)return;return resolveShot(p,z,0,'giro','tiro a giro')}
   if(c==='go'){if(type==='tiro'){const z=await ask(p.team,'zone',{p,piatto:false});return resolveShot(p,z,0,false,'tiro caricato')}
     const h=await ask(p.team,'target',{p,kind:'lancio',extra:0,msg:tr('hint.launchTarget')});G.busy=true;
     G.offList=offsideIds(p.team);const d=hd(p,h);await resolvePass(p,h,'lancio',0);G.offList=null;ev('pass',{kind:'lancio',d,out:stateOutcome(p.team),by:p.tpl});return}
@@ -1381,7 +1438,7 @@ function formationReset(){const ps=G.players.slice();for(const p of ps){p.q=-99;
   for(const p of ps){const h=offToAx(p.home.c,p.home.r);const n=nearestFree(h,()=>true);if(n){p.q=n.q;p.r=n.r}p.f=p.team==='A'?0:3}}
 async function setPieceFlow(){const g=G;const R=G.pendingRestart;G.pendingRestart=null;const T=R.team,O=other(T);
   G.phase='ferma';G.act=null;G.carica=null;G.pending=null;UI.mode=null;closeMenu();G.offList=null;G.ball.flight=null;
-  for(const p of G.players){p.act=false;p.moved=false;p.state='fermo';p.committed=false;p.halfMove=false;p.sbUntil=0}
+  for(const p of G.players){p.act=false;p.moved=false;p.state='fermo';p.committed=false;p.halfMove=false;p.sbUntil=0;p.order=null}
   if(R.type==='rigore')R.spot=penSpot(T);
   if(R.type==='fondo')R.spot=goalKickSpot(T);
   if(R.type==='inizio'){R.spot=kickSpot();formationReset()}
@@ -1446,14 +1503,15 @@ async function kickoff(){G.pendingRestart={type:'inizio',team:G.match.first};awa
 function openDist(h,team){let m=9;for(const o of G.players)if(o.team!==team){const d=hd(o,h);if(d<m)m=d}return m}
 function mateDist(h,p){let m=9;for(const o of G.players)if(o.team===p.team&&o!==p){const d=hd(o,h);if(d<m)m=d}return m}
 function laneClear(from,to,team){const L=line(from,to);for(let i=1;i<L.length-1;i++)for(const o of G.players)if(o.team!==team&&!isSb(o)&&hd(o,L[i])<=1)return false;return true}
-function estShot(p,h,z,piatto,extra=0){const team=p.team,d=dG(h,team);if(piatto&&(d>PIATTO_MAX||z.r===0))return 0;
+function estShot(p,h,z,piatto,extra=0){const team=p.team,d=dG(h,team);const giro=piatto==='giro';if(giro)piatto=false;if(piatto&&(d>PIATTO_MAX||z.r===0))return 0;
   const pd=1+Math.floor(d/8)+pressAt(h,team)+extra+(z.r===0?1:0);
-  let pr=pAtLeast(precPool(p,piatto),pd);const geo=shotGeo(h,team,z);
-  for(const b of geo.blockers){const pi=b.o.st.intercetto-(b.dd===1?1:0);pr*=b.dd===0?0.17:Math.pow(0.5,Math.max(1,pi))}
+  const P0=precPool(p,giro?'giro':piatto);let pr=pAtLeast(P0,pd);const geo=shotGeo(h,team,z,giro);
+  if(giro)pr=pAtLeast(P0,pd)+(pAtLeast(P0,pd-1)-pAtLeast(P0,pd))*0.5*0.5;
+  for(const b of geo.blockers){if(b.wall){pr*=1-pAtLeast(b.o.st.intercetto-2,2)*(1-pAtLeast(P0,pd+1));continue}const pi=b.o.st.intercetto-(b.dd===1?1:0);pr*=b.dd===0?0.17:Math.pow(0.5,Math.max(1,pi))}
   const gi=geo.gk;if(gi.none||gi.empty)return pr*0.97;
-  const pot=piatto?PIATTO_POT:Math.max(1,p.st.tiroPot-Math.floor(d/10));
+  const pot=giro?giroPow(p):piatto?PIATTO_POT:Math.max(1,p.st.tiroPot-Math.floor(d/10));
   const dm=Math.floor(Math.max(0,d-10)/5),adv=gi.adv?(z.r===0?2:-1):0;
-  const k=Math.max(0,Math.round(pot/2)+z.v+geo.cover+gi.piaz+adv+proxBonus(d)-dm);
+  const k=Math.max(0,Math.round(pot/2)+z.v+geo.cover+gi.piaz+adv+proxBonus(d)+(giro?GIRO_EFF:0)-dm);
   const gk=gkVs(team);return k<=0||!gk?0:pr*(1-pAtLeast(gk.st.riflessi,k))}
 function bestShot(p,h,piatto,extra=0,zones=ZONES){let best={xg:0,z:ZONES[3]};for(const z of zones){const x=estShot(p,h,z,piatto,extra);if(x>best.xg)best={xg:x,z}}return best}
 const FASTZ=[ZONES[0],ZONES[2],ZONES[3],ZONES[5]];
@@ -1580,8 +1638,10 @@ function aiDecide(team,kind,data){
   switch(kind){
     case'intensity':{const S=defS(data.def.team);return inAreaOf(data.att,data.def.team)?S.areaInt:S.intensity}
     case'carica':{const S=attS(data.p.team);const c=data.committed;if(c.length&&data.p.st.finta>=Math.max(...c.map(q=>q.st.lettura)))return'finta';
-      if(data.type==='tiro'&&bestShot(data.p,data.p,false,0).xg<S.shootMin*0.6)return'finta';return'go'}
+      if(data.type==='tiro'){const xs=bestShot(data.p,data.p,false,0).xg,xgi=canGiro(data.p)?bestShot(data.p,data.p,'giro',0,GIRO_Z.map(i=>ZONES[i])).xg:0;
+        if(Math.max(xs,xgi)<S.shootMin*0.6)return'finta';return xgi>xs?'giro':'go'}return'go'}
     case'zone':{if(data.penalty){const r=d6();return r<=2?ZONES[3]:r<=4?ZONES[5]:r===5?ZONES[[0,2][d6()%2]]:ZONES[4]}
+      if(data.giro)return bestShot(data.p,data.p,'giro',0,GIRO_Z.map(i=>ZONES[i])).z;
       return bestShot(data.p,data.p,!!data.piatto,data.extra||0,data.piatto?[ZONES[3],ZONES[4],ZONES[5]]:ZONES).z}
     case'target':return aiBestTarget(data.p,data.kind,data.extra||0);
     case'afterFinta':{const p=data.p,S=attS(p.team);const xp=data.piatto?bestShot(p,p,true,1).xg:0;if(xp>=S.shootMin)return'piatto';
@@ -1744,7 +1804,7 @@ function availableActions(a){const p=a.p,hold=isHolder(p),out=[];const rs=restri
     if(firstAction(a)&&rs!=='laterale'&&rs!=='inizio'){out.push({k:'cLancio',ic:'⤴',lb:tr(rs==='angolo'?'menu.cross':'menu.launch'),h:tr('menu.chargeH'),cls:'warn'});
       if(!rs||rs==='punizione')out.push({k:'cTiro',ic:'◎',lb:tr('menu.chargeShot'),h:tr('menu.chargeShotH',{m:dG(p,p.team)*2}),cls:'warn'})}
     if((!a.moved||a.rem>=2)&&!rs&&dribbleTargets(p).length){const mo=a.moved&&p.state==='corsa';out.push({k:'dribble',ic:'✦',lb:tr('menu.dribbling'),h:tr('menu.dribblingH',{n:p.st.dribbling+(mo?1:0)})+(mo?tr('menu.momentum'):'')})}}
-  if(canTackle(p)){const h=holderP();out.push({sep:1});out.push({k:'tackle',ic:'⚔',lb:tr(p.gk?'menu.gkOut':'menu.tackle'),h:tr('menu.tackleH',{a:p.st.contrasto,b:h.st.dribbling}),cls:'warn'})}
+  if(canTackle(p)){const h=holderP();out.push({sep:1});const ru=a.moved&&p.state==='corsa';out.push({k:'tackle',ic:'⚔',lb:tr(p.gk?'menu.gkOut':'menu.tackle'),h:tr('menu.tackleH',{a:Math.max(1,p.st.contrasto-(ru?1:0)),b:h.st.dribbling})+(ru?tr('menu.rushH'):''),cls:'warn'})}
   out.push({sep:1});out.push({k:'end',ic:'✓',lb:tr(!a.used?'menu.stayStill':hold?'menu.keep':'menu.done'),h:'',cls:'go'});
   if(!a.used)out.push({k:'cancel',ic:'✕',lb:tr('menu.cancel'),h:''});
   return out}
@@ -2093,7 +2153,7 @@ function onLeft(h,e){if(modalOpen())return;if(isEdit()){editLeft(h);return}
   if(UI.mode==='passNow'){if(validTarget({p:a.p,kind:'pass',now:true},h))actPassNow(a,h);return}
   if(UI.mode==='dribble'){const o=dribbleTargets(a.p).find(x=>same(x,h));if(o)actDribble(a,o).then(ok=>{if(ok&&G.act===a)setTimeout(()=>openMenu(a.p),380)});return}
   if(UI.mode==='move'&&!a.moved){const o=a.opts.get(K(h));if(o){hideTip();doMove(a,o);render();if(G.over||G.act!==a)return;
-    if(!isHolder(a.p)){endActivation();return}
+    if(!isHolder(a.p)&&!canTackle(a.p)){endActivation();return}
     setTimeout(()=>{if(G.act===a&&!UI.mode)openMenu(a.p)},380)}}}
 const $=id=>document.getElementById(id);
 $('newBtn').onclick=()=>{if(TUT.on)startLesson(TUT.i);else if(G&&G.full)startMatch();else reset()};
