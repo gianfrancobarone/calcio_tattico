@@ -1161,7 +1161,9 @@ function startAct(p){ev('select',{by:p.tpl});G.act={p,moved:false,used:false,rot
 const firstAction=a=>G.actCount===0&&!a.moved;
 const restrictedKick=a=>G.restart&&G.restart.kicker===a.p.id&&!a.moved?G.restart.type:null;
 function doMove(a,o){const p=a.p;const cp=G.carica?byId(G.carica.id):null;const before=cp?hd(p,cp):0;
-  p.q=o.h.q;p.r=o.h.r;p.f=o.nf;p.state=(!o.back&&o.d>=3)?'corsa':'fermo';p.moved=true;
+  // in corsa se ha percorso almeno 6 m, o tutto il suo scatto se è più corto (es. chi conduce palla lentamente)
+  const hb0=isHolder(p);let sc0=hb0?p.st.scattoP:p.st.scatto;if(p.halfMove)sc0=Math.floor(sc0/2);const runMin=Math.max(2,Math.min(3,sc0));
+  p.q=o.h.q;p.r=o.h.r;p.f=o.nf;p.state=(!o.back&&o.d>=runMin)?'corsa':'fermo';p.moved=true;
   if(!o.back){const look=isHolder(p)?tgt(p.team):ballHex();if(look&&!same(look,p))p.f=dirTo(p,look)}ev('move',{by:p.tpl,d:o.d,corsa:p.state==='corsa',ball:isHolder(p)});
   a.moved=a.used=true;a.rem=o.lim-o.cost;UI.mode=null;
   log(tr(isHolder(p)?'log.dribbleMove':'log.move',{p:nm(p),m:o.d*2})+(o.back?tr('log.back'):'')+(p.state==='corsa'?tr('log.running'):'')+'.');
