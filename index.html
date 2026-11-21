@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Calcio Tattico — Prototipo v0.8</title>
+<title>Calcio Tattico — Prototipo v0.9</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -167,7 +167,7 @@ html{touch-action:manipulation}
 </head>
 <body>
 <header>
-  <h1><span data-i18n="ui.title"></span> <small>v0.8</small></h1>
+  <h1><span data-i18n="ui.title"></span> <small>v0.9</small></h1>
   <div class="sp"></div>
   <select id="langSel" class="hidden" aria-label="Lingua"></select>
   <select id="scn" aria-label="Scenario"></select>
@@ -296,6 +296,8 @@ const DICT={it:{
  'scn.blocco':"Attacco al blocco basso (5 contro 5 + portiere)",
  'scn.centrale':"Costruzione centrale (3 contro 2 + portiere)",
  'scn.fascia':"Ripartenza in fascia",
+ 'scn.punLim':"Punizione dal limite",
+ 'scn.pun34':"Punizione dai tre quarti",
  'scn.area':"Area affollata",
  'scn.custom':"Situazione personalizzata",
  'scn.fromEditor':"Dall'editor",
@@ -376,8 +378,8 @@ const DICT={it:{
  'st.redDone':" · rossi hanno finito",
  'st.chargingShot':"{p} sta caricando il tiro.",
  'st.chargingLaunch':"{p} sta caricando un lancio.",
- 'st.pendingPiatto':"◔ Tiro di piatto dichiarato da {p}.",
- 'st.pendingPass':"⇢ Passaggio nello spazio dichiarato da {p}.",
+ 'st.pendingPiatto':"◔ Tiro diretto dichiarato da {p}.",
+ 'st.pendingPass':"⇢ Passaggio preciso dichiarato da {p}.",
  'st.flight':"✕ Lancio in volo: atterra nel turno {n}.",
  'st.restart':"{r}: batte {p}.",
  'st.noOffside':" Niente fuorigioco sulla battuta.",
@@ -405,8 +407,8 @@ const DICT={it:{
  'hint.deadBall':"Palla ferma: si decide la ripresa del gioco…",
  'hint.ai':"Il computer ({team}) sta giocando…",
  'hint.move':"<b>{p}</b>: {LC} sulla destinazione. In giallo la zona raggiungibile solo in corsa, in azzurro all'indietro.{ESC}",
- 'hint.pass':"<b>{p}</b>: {LC} sul punto in cui mandare la palla (parte a fine turno).{ESC}",
- 'hint.passNow':"<b>{p}</b>: {LC} sul compagno evidenziato. Il passaggio è immediato.{ESC}",
+ 'hint.pass':"<b>{p}</b>: {LC} sul compagno o sul punto: passaggio preciso, parte a fine turno. I colori indicano la probabilità di riuscita.{ESC}",
+ 'hint.passNow':"<b>{p}</b>: {LC} sul compagno o su un punto: passaggio diretto, immediato. Verde = sicuro, rosso = rischioso.{ESC}",
  'hint.dribble':"<b>{p}</b>: {LC} sull'avversario da saltare.{ESC}",
  'hint.selected':"<b>{p}</b> selezionato: usa {RC} sul calciatore per il menu azioni.",
  'hint.idle':"Per agire usa {RC} su un calciatore {team} non grigio, oppure premi <b>Fine turno</b>.",
@@ -423,14 +425,15 @@ const DICT={it:{
  'menu.onePoint':"1 punto",
  'menu.rotL':"Ruota a sinistra",
  'menu.rotR':"Ruota a destra",
- 'menu.passNow':"Passaggio sui piedi",
- 'menu.throwNow':"Rimessa sui piedi",
- 'menu.passNowH':"immediato · a un compagno entro 20 m",
- 'menu.passSpace':"Passaggio nello spazio",
- 'menu.throwSpace':"Rimessa nello spazio",
- 'menu.passSpaceH':"parte a fine turno · max {m} m",
- 'menu.piatto':"Tiro di piatto",
- 'menu.piattoNow':"immediato · rasoterra, debole · da {m} m",
+ 'menu.passNow':"Passaggio diretto",
+ 'menu.throwNow':"Rimessa diretta",
+ 'menu.passNowH':"parte subito, anche in corsa · fino a {m} m · meno preciso",
+ 'menu.onTheRun':" · sei in corsa",
+ 'menu.passSpace':"Passaggio preciso",
+ 'menu.throwSpace':"Rimessa precisa",
+ 'menu.passSpaceH':"solo da fermo · parte a fine turno · più preciso · max {m} m",
+ 'menu.piatto':"Tiro diretto",
+ 'menu.piattoNow':"immediato, anche in corsa · rasoterra · potenza {n} · da {m} m",
  'menu.piattoLater':"a fine turno · rasoterra, debole · da {m} m",
  'menu.launch':"Carica lancio / cross",
  'menu.cross':"Carica il cross",
@@ -452,8 +455,8 @@ const DICT={it:{
  'menu.speedBall':"Con palla: scatto {a} m · corsa {b} m",
  // Suggerimento vicino al cursore
  'tip.launch':"Lancio",
- 'tip.now':"Sui piedi",
- 'tip.space':"Nello spazio",
+ 'tip.now':"Passaggio diretto",
+ 'tip.space':"Passaggio preciso",
  'tip.dice':"{n} dadi contro difficoltà {d}",
  'tip.pressed':" · pressato +1",
  'tip.outArc':" · fuori dall'arco +1",
@@ -469,12 +472,13 @@ const DICT={it:{
  // Dialoghi
  'zone.AS':"Alto sinistra",'zone.AC':"Alto centro",'zone.AD':"Alto destra",'zone.BS':"Basso sinistra",'zone.BC':"Basso centro",'zone.BD':"Basso destra",
  'zone.title':"Dove tiri?",
- 'zone.titlePiatto':"Tiro di piatto: dove?",
+ 'zone.titlePiatto':"Tiro diretto: dove?",
+ 'zone.prob':"precisione {p}",
  'zone.titlePen':"Rigore: dove calci?",
  'zone.info':"Da {m} m · precisione {n} dadi. Zone basse: difficoltà {lo} ({plo}).",
  'zone.infoPen':"Dal dischetto · precisione {n} dadi. Zone basse: difficoltà {lo} ({plo}).",
  'zone.infoHigh':" Zone alte: {hi} ({phi}), con il rischio di tirare sopra la traversa.",
- 'zone.infoPiatto':" Di piatto la palla resta rasoterra e la potenza è di {pot} dadi.",
+ 'zone.infoPiatto':" Il tiro diretto (di prima, in corsa o di testa) resta basso e la potenza è di {pot} dadi.",
  'zone.infoV':" Il +N indica quanto la zona complica la parata.",
  'int.leggero':"Leggero",'int.medio':"Medio",'int.forte':"Forte",'int.tattico':"<b>Fallo tattico</b> · sempre fallo, giallo con d6 4+",
  'int.title':"{p}: che contrasto?",
@@ -489,11 +493,11 @@ const DICT={it:{
  'car.shoot':"◎ <b>Tira</b> · scegli la zona della porta",
  'car.launch':"⤴ <b>Lancia</b> · clic sul punto di arrivo",
  'car.giro':"↪ <b>Tiro a giro</b> · aggira i corpi e la barriera, mira solo agli angoli, meno potente",
- 'car.finta':"↯ <b>Finta</b> · poi passaggio, piatto o tieni palla",
+ 'car.finta':"↯ <b>Finta</b> · poi passaggio, tiro diretto o tieni palla",
  'af.title':"Dopo la finta",
  'af.info':"Ogni giocata dopo la finta ha +1 di difficoltà.",
  'af.pass':"⇢ <b>Passaggio rasoterra</b> (+1 difficoltà)",
- 'af.piatto':"◔ <b>Tiro di piatto</b> (+1 difficoltà)",
+ 'af.piatto':"◔ <b>Tiro diretto</b> (+1 difficoltà)",
  'af.keep':"● <b>Tieni palla</b>",
  'rm.info':"Battuta rapida: si gioca subito, prima che gli avversari si sistemino, ma senza riposizionare i compagni. Piazzamento: le squadre spostano un calciatore alla volta, dove vogliono, finché non sono pronte.",
  'rm.quick':"⚡ <b>Battuta rapida</b>",
@@ -521,16 +525,17 @@ const DICT={it:{
  'dice.rebDir':"Direzione rimbalzo",
  'dice.devDir':"Direzione deviazione",
  'dice.launch':"{p} · Lancio",
+ 'dice.passDirect':"{p} · Passaggio diretto",
  'dice.passShort':"{p} · Passaggio corto",
  'dice.passLong':"{p} · Passaggio lungo",
  'dice.tunnel':"Tunnel su {p}? (serve 6)",
  'dice.interceptOn':"{p} · Intercetto (sulla linea)",
  'dice.interceptStretch':"{p} · Intercetto (in allungo)",
  'dice.prec':"{p} · Precisione",
- 'dice.precPiatto':"{p} · Precisione (piatto)",
+ 'dice.precPiatto':"{p} · Precisione (tiro diretto)",
  'dice.precPen':"{p} · Precisione (rigore)",
  'dice.pow':"{p} · Potenza",
- 'dice.powPiatto':"{p} · Potenza (piatto)",
+ 'dice.powPiatto':"{p} · Potenza (tiro diretto)",
  'dice.legs':"Spiraglio tra le gambe di {p}? (serve 6)",
  'dice.close':"{p} · Chiusura",
  'dice.block':"{p} · Respinta",
@@ -542,6 +547,13 @@ const DICT={it:{
  'dice.behind':" (da dietro)",
  'dice.side':" (di lato)",
  'dice.rush':" (−1 in corsa)",
+ 'dice.closeRange':" (palla a ridosso: −1)",
+ 'dice.icOn':"{p} · Sulla traiettoria",
+ 'dice.icFront':"{p} · Intercetto (davanti)",
+ 'dice.icSide':"{p} · Intercetto (di lato)",
+ 'dice.icCtrl':"{p} · Controllo dell'intercetto",
+ 'log.missesIt':"{p} non ci arriva.",
+ 'sub.tunnel':"Tunnel su {p}!",
  'dice.momentum':" (+1 slancio)",
  'dice.dribble':"{p} · Dribbling",
  'dice.protect':"{p} · Protezione",
@@ -565,11 +577,13 @@ const DICT={it:{
  'log.running':" ed è in corsa",
  'log.committed':"{p} esce sul portatore: <b>impegnato</b> contro la giocata caricata.",
  'log.endTurn':"{team}: fine turno.",
- 'log.passNow':"{p} gioca sui piedi di {q}: passaggio immediato.",
+ 'log.passNow':"{p} gioca subito su {q}: passaggio diretto.",
+ 'log.passNowSpace':"{p} gioca subito nello spazio: passaggio diretto.",
+ 'log.onTheRun':" (in corsa)",
  'log.halfMove':"{p} ha <b>mezzo movimento</b> per il resto del turno.",
- 'log.passSpace':"{p} gioca nello spazio: la palla parte nella fase palla.",
- 'log.piattoNow':"{p} calcia subito di piatto ({z}).",
- 'log.piattoLater':"{p} calcia di piatto ({z}): parte nella fase palla.",
+ 'log.passSpace':"{p} si ferma e prepara un passaggio preciso: la palla parte nella fase palla.",
+ 'log.piattoNow':"{p} calcia subito ({z}).",
+ 'log.piattoLater':"{p} calcia ({z}): parte nella fase palla.",
  'log.caricaTiro':"{p} <b>carica il tiro</b>: tutti lo vedono.",
  'log.caricaLancio':"{p} <b>carica un lancio</b>: tutti lo vedono.",
  'log.dribbleFree':"{p} è sbilanciato: dribbling libero.",
@@ -600,7 +614,7 @@ const DICT={it:{
  'log.contested':"Contrasto sul pallone: nessuno lo controlla.",
  'log.orientedStop':"Stop orientato di {p}.",
  'log.shot':"{p} tira ({z}) da {m} m.",
- 'log.shotPiatto':"{p} calcia di piatto ({z}) da {m} m.",
+ 'log.shotPiatto':"{p} tira di prima ({z}) da {m} m.",
  'log.shotGap':"Il tiro trova lo spiraglio accanto a {p}.",
  'log.throughLegs':"<b>Passa tra le gambe!</b>",
  'log.blocked':"Tiro <b>murato</b> da {p}!",
@@ -642,7 +656,8 @@ const DICT={it:{
  'log.penParried':"{p} respinge il rigore!",
  'log.aiError':"Errore del computer: {e}",
  // Sottotitoli sul campo
- 'sub.passNow':"{p} passa sui piedi di {q}",
+ 'sub.passNow':"{p} serve subito {q}",
+ 'sub.passNowSpace':"{p} lancia subito nello spazio",
  'sub.chargeShot':"{p} carica il tiro: tutti lo vedono",
  'sub.chargeLaunch':"{p} carica un lancio: tutti lo vedono",
  'sub.dribbleOk':"{p} salta {o}!",
@@ -679,6 +694,7 @@ const DICT={it:{
  'log.shotGiro':"{p} calcia a giro verso {z} da {m} m.",
  'dice.precGiro':"{p} · Precisione a giro",
  'dice.powGiro':"{p} · Potenza a giro",
+ 'dice.wallTiming':"{p} · Tempo del salto (1 = salta troppo presto)",
  'dice.wallJump':"{p} · Salto in barriera",
  'log.overWall':"La palla scavalca {p}.",
  'log.sdGiro':" + effetto a giro {n}",
@@ -689,6 +705,15 @@ const DICT={it:{
  'log.saveWeak':"Il pallone finisce nello specchio ma senza forza: {p} lo blocca.",
  'sub.saveWeak':"Palla verso la porta senza forza: {p} la blocca",
  'res.goalWeak':"Il pallone finisce in rete: il portiere era fuori dai pali.",
+ 'fk.title':"Punizione: battuta di {p}",
+ 'fk.info':"Gioco fermo a {m} m dalla porta: la giocata parte subito, la difesa non può più muoversi.",
+ 'fk.infoIndirect':"Punizione indiretta: non puoi tirare direttamente in porta.",
+ 'fk.shot':"◎ <b>Tiro diretto potente</b> · stima gol ~{x}",
+ 'fk.giro':"↪ <b>Tiro a giro</b> · aggira la barriera · stima gol ~{x}",
+ 'fk.cross':"⤴ <b>Cross / lancio in area</b> · scegli il punto",
+ 'fk.pass':"⇉ <b>Passaggio corto</b> · diretto, a un compagno o nello spazio",
+ 'fk.other':"☰ Altre giocate (menu completo)",
+ 'hint.fkPass':"<b>{p}</b>: {LC} sul compagno o sul punto. I colori indicano la probabilità di riuscita.",
  // Avvisi
  'toast.ballPhase':"Fase palla",
  'toast.turn':"Turno {n} · {who}",
@@ -806,15 +831,15 @@ const DICT={it:{
  'tut.2.4':"A fine corsa il calciatore si gira da solo: verso la porta se ha palla, verso il pallone se non ce l'ha. Per orientarlo diversamente, apri il menu <b>prima di muoverlo</b> e usa <b>Ruota a sinistra</b> o <b>a destra</b> (la prima rotazione è gratis, le altre costano movimento).",
  'tut.2.end':"Ricorda: chi è già lanciato va più lontano, ma cambiare direzione lo frena.",
  'tut.3.t':"Passaggi",
- 'tut.3.1':"Ci sono due passaggi. <b>Sui piedi</b>: immediato, ma solo come prima azione del turno e fino a 20 m. <b>Nello spazio</b>: verso un esagono, e la palla parte a fine turno, così il compagno ha tempo di arrivarci.",
- 'tut.3.2':"Come prima azione, apri il menu dell'8 e gioca un <b>Passaggio sui piedi</b> al <b>10</b>. Passando sopra il compagno vedi la probabilità di riuscita.",
+ 'tut.3.1':"Ci sono due passaggi. <b>Diretto</b>: parte subito, anche in corsa, verso un compagno o uno spazio; la portata dipende dalla tecnica e la precisione cala con la distanza. <b>Preciso</b>: solo da fermo, la palla parte a fine turno, così il compagno ha tempo di arrivarci, ed è più preciso. Quando scegli il bersaglio gli esagoni sono colorati: verde sicuro, rosso rischioso.",
+ 'tut.3.2':"Come prima azione, apri il menu dell'8 e gioca un <b>Passaggio diretto</b> al <b>10</b>. Passando sopra il compagno vedi la probabilità di riuscita.",
  'tut.3.3':"Chi riceve ha solo <b>mezzo movimento</b> per il resto del turno, perché il passaggio ha preso tempo. Chiudi il turno con <b>Fine turno blu</b>.",
- 'tut.3.4':"Ora un <b>Passaggio nello spazio</b> dal 10 verso l'<b>esagono segnato</b>, poi muovi la <b>9</b> verso quel punto e chiudi il turno: la palla parte quando la 9 è già arrivata.",
+ 'tut.3.4':"Ora un <b>Passaggio preciso</b> dal 10 verso l'<b>esagono segnato</b>, poi muovi la <b>9</b> verso quel punto e chiudi il turno: la palla parte quando la 9 è già arrivata.",
  'tut.3.5':"Attenzione ai corpi: se un avversario è <b>sulla linea</b>, la palla lo colpisce (respinta) o viene intercettata. Chi è <b>accanto</b> alla linea può allungarsi. Prima di cliccare guarda sempre la percentuale nel suggerimento.",
- 'tut.3.end':"Sui piedi per la sicurezza, nello spazio per guadagnare metri.",
+ 'tut.3.end':"Diretto per giocare veloce, preciso per mandare il compagno nello spazio.",
  'tut.4.t':"Fuorigioco",
  'tut.4.1':"La <b>linea gialla tratteggiata</b> è il fuorigioco: la più avanzata tra il penultimo difensore e la palla. Una <b>bandierina</b> compare sugli attaccanti oltre la linea. Se uno di loro riceve, è punizione per la difesa.",
- 'tut.4.2':"Gioca un <b>Passaggio nello spazio</b> verso l'<b>esagono segnato</b>, oltre la linea, e <b>solo dopo</b> muovi la <b>9</b> verso il pallone. Il fuorigioco si valuta quando dichiari il passaggio, non quando la palla arriva.",
+ 'tut.4.2':"Gioca un <b>Passaggio preciso</b> verso l'<b>esagono segnato</b>, oltre la linea, e <b>solo dopo</b> muovi la <b>9</b> verso il pallone. Il fuorigioco si valuta quando dichiari il passaggio, non quando la palla arriva.",
  'tut.4.end':"Se la 9 fosse partita prima del passaggio sarebbe stata in fuorigioco: è il tempo giusto dell'attacco alla profondità.",
  'tut.5.t':"Difendere",
  'tut.5.1':"Ora giochi il <b>rosso</b> e il computer attacca. Si contrasta solo un avversario <b>davanti a te</b> (nel tuo cono) e adiacente. Puoi scegliere l'intensità: più forte vuol dire più dadi, ma ogni <b>1</b> uscito avvicina il fallo. Da dietro si fa fallo più facilmente.",
@@ -822,12 +847,12 @@ const DICT={it:{
  'tut.5.end':"In difesa conta la posizione prima del contrasto: chi arriva frontale vince più duelli e fa meno falli.",
  'tut.6.t':"Tirare",
  'tut.6.1':"Il tiro va verso una delle <b>6 zone</b> della porta. I tiri <b>bassi</b> possono essere chiusi da chi è sulla linea o accanto, e i corpi coprono la visuale al portiere. Quelli <b>alti</b> passano sopra, ma sono meno precisi. Da vicino la parata è più difficile, e se il portiere è fuori posizione o già superato la porta è vuota.",
- 'tut.6.2':"Tira! Scegli il <b>Tiro di piatto</b> (immediato, preciso ma debole) oppure <b>Carica tiro</b> (più potente, ma lo vedono tutti e parte a fine turno). Nella scelta della zona trovi le probabilità.",
+ 'tut.6.2':"Tira! Scegli il <b>Tiro diretto</b> (immediato, più debole) oppure <b>Carica tiro</b> (più potente, ma lo vedono tutti e parte a fine turno). Nella scelta della zona trovi le probabilità.",
  'tut.6.end':"Più corpi ci sono davanti, più conviene alzare la mira o spostarsi per trovare la linea libera.",
  'tut.7.t':"Carica e finta",
  'tut.7.1':"Tiri potenti e lanci vanno <b>caricati</b>: si dichiarano come prima azione del turno e tutti li vedono. Nella fase palla puoi eseguirli oppure <b>fintare</b>.",
  'tut.7.2':"Come <b>prima azione</b> apri il menu del 10 e scegli <b>Carica tiro</b>.",
- 'tut.7.3':"Il difensore vede la carica e ti esce addosso (bordo arancione: è <b>impegnato</b>). Chiudi il turno con <b>Fine turno blu</b>: nella fase palla scegli <b>Finta</b>. Se la tua Finta batte la sua Lettura resta sbilanciato. Poi gioca il piatto o un passaggio.",
+ 'tut.7.3':"Il difensore vede la carica e ti esce addosso (bordo arancione: è <b>impegnato</b>). Chiudi il turno con <b>Fine turno blu</b>: nella fase palla scegli <b>Finta</b>. Se la tua Finta batte la sua Lettura resta sbilanciato. Poi gioca il tiro diretto o un passaggio.",
  'tut.7.end':"La finta funziona solo contro chi si è impegnato: un difensore che aspetta non abbocca.",
  'tut.8.t':"Palla ferma",
  'tut.8.1':"Fallo al limite dell'area: <b>punizione</b>. Scegli <b>Piazzamento</b>: tu e il computer spostate un calciatore a testa, a turno, dove volete (i rossi a 9 m dalla palla, cerchio arancione). Quando hai finito premi <b>Pronto blu</b>.",
@@ -840,9 +865,9 @@ const DICT={it:{
  'help.title':"Regole del prototipo (1 esagono = 2 m · 1 turno = 2 s)",
  'help.1':"<b>Comandi</b>: <b>tasto destro</b> (su touch: tieni premuto) su un tuo calciatore non grigio apre il menu. <b>Clic sinistro</b> per destinazioni e bersagli, <b>Esc</b> annulla. <b>Fine turno</b>: la tua squadra smette di muovere, l'altra può continuare. Rotellina o pizzico per lo zoom, trascina per spostare la vista.",
  'help.2':"<b>Velocità e orientamento</b>: Scatto e Corsa, diversi con palla e senza. Curva di 120° costa 1, di 180° costa 2 (e si usa lo Scatto). Indietro fino a 4 m. A fine corsa il calciatore si gira da solo verso il pallone (o verso la porta se ha palla) e, se non ha palla, la sua attivazione finisce lì; per orientarlo diversamente usa Ruota prima di muoverlo.",
- 'help.3':"<b>Passaggio sui piedi</b>: prima azione del turno, fino a 20 m, immediato; chi riceve ha mezzo movimento. <b>Nello spazio</b>: qualsiasi esagono fino a 40 m, parte nella fase palla.",
- 'help.4':"<b>Corpi sulla linea</b>: chi è esattamente sulla traiettoria viene colpito. La palla passa solo con una giocata perfetta o con un 6 sul dado del tunnel. Con 2 successi di Intercetto la prende, altrimenti la respinge. Chi è adiacente alla linea deve allungarsi: 2 successi la prende, 1 la devia, 0 la palla passa.",
- 'help.5':"<b>Respinte</b>: direzione casuale; distanza d3 esagoni per il passaggio corto, d6 per passaggio lungo, piatto e lancio, d6 + successi di potenza per il tiro. Se la palla esce dopo un tocco della difesa è angolo o rimessa per l'attacco.",
+ 'help.3':"<b>Passaggio diretto</b>: parte subito, anche dopo aver condotto, verso un compagno o uno spazio. La portata va da 20 a 40 m secondo la tecnica; la difficoltà sale ogni 12 m. Chi riceve ha mezzo movimento. <b>Passaggio preciso</b>: solo se il giocatore non si è mosso; fino a 40 m, parte nella fase palla ed è più preciso. Gli esagoni colorati mostrano la probabilità di riuscita.",
+ 'help.4':"<b>Intercetti</b>: per ogni avversario vicino alla traiettoria si tirano 2d6. Se la palla passa a 2 m nell'esagono davanti a lui: 8+ (42%), o 7+ (58%) se è bravo nell'intercetto. Negli esagoni davanti a lato: 9+ (28%) o 8+ (42%). Dietro di lui: non può intercettare. Se la palla passa a ridosso di chi calcia, serve 1 in più. Chi è sulla traiettoria la tocca con 6+ (72%) o 5+ (83%), altrimenti è tunnel. Se la tocca, la controlla con 2 successi di Stop (un dado in meno se il passaggio è lungo; sulla traiettoria solo se è girato verso la palla), altrimenti la devia. Gli esagoni colorati tengono già conto di questo rischio.",
+ 'help.5':"<b>Respinte</b>: direzione casuale; distanza d3 esagoni per il passaggio corto, d6 per passaggio lungo, tiro diretto e lancio, d6 + successi di potenza per il tiro. Se la palla esce dopo un tocco della difesa è angolo o rimessa per l'attacco.",
  'help.6':"<b>Carica</b> lancio o tiro: prima attivazione del turno, visibile a tutti; nella fase palla si esegue o si finta.",
  'help.7':"<b>Tiro</b>: la linea va verso la zona scelta. Tiri bassi: chiude anche chi è adiacente; ogni corpo sulla linea copre la visuale al portiere. Tiri alti: chiude solo chi è entro 4 m dal tiratore, +1 alla difficoltà, rischio di tirare sopra la traversa. Portiere lontano dalla linea o già superato = porta vuota; da vicino la parata è più difficile (+3 entro 6 m, +2 entro 10 m, +1 entro 12 m).",
  'help.8':"<b>Palla ferma</b> (punizione, rigore, angolo, rimesse, calcio d'inizio): chi batte sceglie battuta rapida o piazzamento libero a turni alternati, con le distanze rispettate e la barriera automatica. Niente fuorigioco su angolo, rimessa laterale e rimessa dal fondo.",
@@ -937,6 +962,10 @@ const BUILTIN=[
      ['D','Terzino',11,6,3],['D','Centrale',17,5,3],['D','Centrale',21,5,3],['D','Terzino',27,6,3],['D','Mediano',19,10,3],['D','Portiere',19,0,3]]},
   {key:'centrale',holder:0,players:[['A','Regista',19,20,0],['A','Ala',6,14,0],['A','Punta',22,10,0],['D','Centrale',18,7,3],['D','Terzino',9,8,3],['D','Portiere',19,0,3]]},
   {key:'fascia',holder:0,players:[['A','Ala',4,13,0],['A','Regista',14,17,1],['A','Punta',21,9,0],['D','Centrale',17,5,3],['D','Terzino',8,9,4],['D','Portiere',19,0,3]]},
+  {key:'punLim',holder:0,fk:[17,10],players:[['A','Regista',17,11,0],['A','Punta',20,5,0],['A','Mezzala',15,6,0],['A','Ala',24,8,0],['A','Centrale',22,6,0],
+     ['D','Centrale',19,4,3],['D','Centrale',16,4,3],['D','Terzino',23,5,3],['D','Mediano',21,7,3],['D','Terzino',13,6,3],['D','Portiere',19,0,3]]},
+  {key:'pun34',holder:0,fk:[11,16],players:[['A','Regista',11,17,0],['A','Punta',20,5,0],['A','Mezzala',16,7,0],['A','Ala',25,6,0],['A','Centrale',22,7,0],
+     ['D','Centrale',19,4,3],['D','Centrale',16,4,3],['D','Terzino',23,5,3],['D','Mediano',18,8,3],['D','Terzino',13,7,3],['D','Portiere',19,0,3]]},
   {key:'area',holder:0,players:[['A','Mezzala',19,9,0],['A','Punta',22,5,0],['A','Ala',13,6,1],['D','Centrale',18,4,3],['D','Centrale',20,4,3],['D','Mediano',19,6,3],['D','Terzino',16,5,3],['D','Portiere',19,0,3]]}
 ];
 // Moduli: [ruolo, colonna, righe dalla propria porta, numero]
@@ -950,7 +979,7 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 function normScen(s){const players=(s.players||[]).map(x=>{if(Array.isArray(x)){const[team,tpl,c,r,f,num]=x;return{team,tpl,c,r,f,num:num||ROLES[tpl].num,st:clone(ROLES[tpl].st)}}
     const team=x.team==='D'?'D':'A';const tpl=ROLES[x.tpl]?x.tpl:'Mezzala';
     return{team,tpl,c:+x.c|0,r:+x.r|0,f:((+x.f|0)%6+6)%6,num:x.num||ROLES[tpl].num,name:x.name,st:Object.assign(clone(ROLES[tpl].st),x.st||{})}});
-  return{name:s.name||(s.key?tr('scn.'+s.key):tr('scn.custom')),holder:(s.holder==null||s.holder<0)?null:s.holder,ball:s.ball||null,players}}
+  return{name:s.name||(s.key?tr('scn.'+s.key):tr('scn.custom')),holder:(s.holder==null||s.holder<0)?null:s.holder,ball:s.ball||null,fk:s.fk||null,players}}
 function fullScen(fa,fd){const P=[];
   for(const[tpl,c,d,num]of FORMS[fa])P.push(['A',tpl,c,52-1-d,0,num]);
   for(const[tpl,c,d,num]of FORMS[fd])P.push(['D',tpl,38-c,d,3,num]);
@@ -1059,7 +1088,11 @@ function choose(title,body,opts,cls){return new Promise(res=>{const B=openModal(
     b.onclick=()=>{closeModal();res(o.k)};B.appendChild(b)})})}
 const ZONES=[{k:'AS',v:2,r:0,c:0},{k:'AC',v:1,r:0,c:1},{k:'AD',v:2,r:0,c:2},{k:'BS',v:1,r:1,c:0},{k:'BC',v:0,r:1,c:1},{k:'BD',v:1,r:1,c:2}];
 const zn=z=>tr('zone.'+z.k);
-const PIATTO_MAX=10, PIATTO_POT=3, NOW_MAX=10;
+const PIATTO_MAX=10;
+// Tiro diretto: potenza in base al giocatore (2-5 dadi)
+const piattoPow=p=>Math.max(2,Math.min(5,Math.floor((p.st.tiroPot+p.st.tiroPrec)/2)));
+// Passaggio diretto: portata in base alla tecnica (20 m per chi è scarso, 40 m per i migliori)
+const dirRange=p=>Math.max(10,Math.min(20,4*Math.max(p.st.passCorto,p.st.passLungo)));
 const precPool=(p,m)=>m==='giro'?Math.max(p.st.tiroPrec,p.st.lancio):m?Math.max(p.st.tiroPrec,p.st.passCorto):p.st.tiroPrec;
 // Tiro a giro: solo da fuori area, tra 16 e 36 m
 let GIRO_EFF=1;const GIRO_MIN=8,GIRO_MAX=18,GIRO_Z=[0,2,3,5];
@@ -1068,15 +1101,18 @@ const giroPow=p=>Math.max(1,Math.ceil((p.st.tiroPot+p.st.lancio)/2)-2-Math.floor
 const precDiff=(p,z,extra)=>1+Math.floor(dG(p,p.team)/8)+pressure(p)+extra+(z&&z.r===0?1:0);
 function chooseZone(p,piatto,extra=0,penalty=false,giro=false){return new Promise(res=>{const d=dG(p,p.team),pp=precPool(p,giro?'giro':piatto);
   const lo=penalty?1:precDiff(p,ZONES[4],extra),hi=penalty?2:precDiff(p,ZONES[0],extra);
-  const info=tr(penalty?'zone.infoPen':'zone.info',{m:d*2,n:pp,lo,plo:pct(pAtLeast(pp,lo))})+(piatto?tr('zone.infoPiatto',{pot:PIATTO_POT}):tr('zone.infoHigh',{hi,phi:pct(pAtLeast(pp,hi))}))+(giro?tr('zone.infoGiro',{pot:giroPow(p)}):'')+tr('zone.infoV');
+  const info=tr(penalty?'zone.infoPen':'zone.info',{m:d*2,n:pp,lo,plo:pct(pAtLeast(pp,lo))})+(piatto?tr('zone.infoPiatto',{pot:piattoPow(p)}):tr('zone.infoHigh',{hi,phi:pct(pAtLeast(pp,hi))}))+(giro?tr('zone.infoGiro',{pot:giroPow(p)}):'')+tr('zone.infoV');
   const B=openModal(tr(penalty?'zone.titlePen':giro?'zone.titleGiro':piatto?'zone.titlePiatto':'zone.title'),`<div class="hint">${info}</div>`,'zones');
   ZONES.forEach((z,i)=>{if((piatto&&z.r===0)||(giro&&!GIRO_Z.includes(i))){B.appendChild(document.createElement('div'));return}
-    const b=document.createElement('button');b.innerHTML=`${zn(z)}<br><small>+${z.v}</small>`;
+    const pz=penalty?pAtLeast(pp,1+(z.r===0?1:0)):pAtLeast(pp,precDiff(p,z,extra));
+    const b=document.createElement('button');b.innerHTML=`${zn(z)}<br><small>${tr('zone.prob',{p:pct(pz)})} · +${z.v}</small>`;b.style.background=probCol(pz,.55);b.style.borderColor=probCol(pz,1);
     b.onclick=()=>{closeModal();res(z)};B.appendChild(b)})})}
 function pickTarget(p,kind,extra,msg){return new Promise(res=>{UI.wait={p,kind,extra,msg,resolve:res};G.busy=false;render()})}
-function tRange(k,p){if(G.restart&&p&&G.restart.kicker===p.id&&G.restart.type==='laterale')return 10;return k==='lancio'?45:20}
+function tRange(k,p){if(G.restart&&p&&G.restart.kicker===p.id&&G.restart.type==='laterale')return 10;return k==='lancio'?45:k==='diretto'?dirRange(p):20}
+// colore per probabilità: rosso → giallo → verde
+function probCol(pr,al){const h=Math.round(Math.max(0,Math.min(1,(pr-0.15)/0.75))*120);return `hsla(${h},75%,45%,${al})`}
 function validTarget(tg,h){if(!inField(h)||same(h,tg.p))return false;
-  if(tg.now){const q=playerAt(h);return !!q&&q.team===tg.p.team&&hd(tg.p,h)<=NOW_MAX}
+  if(tg.now){const q=playerAt(h);if(q&&q.team!==tg.p.team)return false;return hd(tg.p,h)<=tRange('diretto',tg.p)}
   return hd(tg.p,h)<=tRange(tg.kind,tg.p)}
 const INT={leggero:{mod:-1,f:4,y:99,r:99},medio:{mod:0,f:3,y:4,r:99},forte:{mod:2,f:2,y:3,r:4},tattico:{}};
 function chooseIntensity(def,att){const ang=angDiff(angTo(att,def),dirAng(att.f)),behind=ang>90;
@@ -1099,6 +1135,11 @@ async function ask(team,kind,data){
       return choose(tr('af.title'),`<div class="hint">${tr('af.info')}</div>`,o2)}
     case'restartMode':return choose(tr('rn.'+data.R.type),`<div class="hint">${tr('rm.info')}</div>`,[{k:'rapida',t:tr('rm.quick')},{k:'piazza',t:tr('rm.place')}]);
     case'rigoreGK':return choose(tr('pen.gkTitle'),`<div class="hint">${tr('pen.gkInfo')}</div>`,[{k:0,t:tr('pen.left')},{k:1,t:tr('pen.center')},{k:2,t:tr('pen.right')}]);
+    case'freeKick':{const p=data.p,d=dG(p,p.team),o=[];
+      if(!data.indirect){if(d<=18)o.push({k:'tiro',t:tr('fk.shot',{x:pct(bestShot(p,p,false,0).xg)})});
+        if(canGiro(p))o.push({k:'giro',t:tr('fk.giro',{x:pct(bestShot(p,p,'giro',0,GIRO_Z.map(i=>ZONES[i])).xg)})})}
+      o.push({k:'lancio',t:tr('fk.cross')},{k:'diretto',t:tr('fk.pass')},{k:'altro',t:tr('fk.other')});
+      return choose(tr('fk.title',{p:nm(p)}),`<div class="hint">${tr(data.indirect?'fk.infoIndirect':'fk.info',{m:d*2})}</div>`,o)}
     case'place':return humanPlace(team,data)}}
 
 // ===================== Attivazioni =====================
@@ -1147,23 +1188,23 @@ async function passTeam(tm){if(G.over||G.phase!=='att')return;
   closeMenu();G.act=null;UI.mode=null;G.passed[tm]=true;log(tr('log.endTurn',{team:tr('team.name'+tm)}));await nextTeam()}
 function dribbleTargets(p){return opps(p.team).filter(o=>hd(o,p)===1&&inFront(p,o)).filter(o=>{const b={q:2*o.q-p.q,r:2*o.r-p.r};return inField(b)&&!playerAt(b)})}
 function canTackle(p){const h=holderP();return !!h&&h.team!==p.team&&hd(p,h)===1&&inFront(p,h)&&!isSb(p)}
-const nowTargets=p=>G.players.filter(q=>q.team===p.team&&q!==p&&hd(p,q)<=NOW_MAX);
+const nowTargets=p=>G.players.filter(q=>q.team===p.team&&q!==p&&hd(p,q)<=tRange('diretto',p));
 function stateOutcome(tm){if(G.over)return G.result.cat;if(G.pendingRestart)return 'palla_ferma';const h=holderP();if(h)return h.team===tm?'ok':'perso';if(G.ball.flight)return 'in_volo';return 'vagante'}
 async function settle(){if(G.over)return'over';if(G.pendingRestart){await setPieceFlow();return'restart'}return'ok'}
 
 async function actPassNow(a,target){const p=a.p,rc=playerAt(target);UI.mode=null;G.busy=true;hideTip();render();
-  log(tr('log.passNow',{p:nm(p),q:nm(rc)}));
-  sub(tr('sub.passNow',{p:nm(p),q:nm(rc)}),p.team);
-  G.offList=offsideIds(p.team);await resolvePass(p,target,'pass',0);G.offList=null;
-  ev('pass',{kind:'sui piedi',d:hd(p,target),out:stateOutcome(p.team),by:p.tpl});
+  const run=a.moved&&p.state==='corsa';
+  log(tr(rc?'log.passNow':'log.passNowSpace',{p:nm(p),q:rc?nm(rc):''})+(run?tr('log.onTheRun'):''));
+  sub(tr(rc?'sub.passNow':'sub.passNowSpace',{p:nm(p),q:rc?nm(rc):''}),p.team);
+  G.offList=offsideIds(p.team);await resolvePass(p,target,'diretto',0);G.offList=null;
+  ev('pass',{kind:'diretto',d:hd(p,target),out:stateOutcome(p.team),by:p.tpl});
   G.busy=false;if(await settle()!=='ok'){render();return}
   const h=holderP();if(h&&h.team===p.team&&h!==p&&!h.act){h.halfMove=true;log(tr('log.halfMove',{p:nm(h)}))}
   await endActivation()}
 async function actSpacePass(a,h){G.pending={from:a.p.id,target:h,type:'pass',off:offsideIds(a.p.team)};log(tr('log.passSpace',{p:nm(a.p)}));hideTip();await endActivation()}
 async function actPiatto(a,z){const p=a.p;
-  if(firstAction(a)){G.busy=true;log(tr('log.piattoNow',{p:nm(p),z:zn(z).toLowerCase()}));await resolveShot(p,z,0,true,'piatto');G.busy=false;
-    if(await settle()==='ok'&&!G.over)await endActivation();else render()}
-  else{G.pending={from:p.id,target:tgt(p.team),type:'piatto',zone:z};log(tr('log.piattoLater',{p:nm(p),z:zn(z).toLowerCase()}));await endActivation()}}
+  G.busy=true;log(tr('log.piattoNow',{p:nm(p),z:zn(z).toLowerCase()}));await resolveShot(p,z,0,true,'tiro diretto');G.busy=false;
+  if(await settle()==='ok'&&!G.over)await endActivation();else render()}
 async function actCarica(a,type){G.carica={id:a.p.id,type};sub(tr(type==='tiro'?'sub.chargeShot':'sub.chargeLaunch',{p:nm(a.p)}),a.p.team);ev('carica',{kind:type});a.p.state='fermo';log(tr(type==='tiro'?'log.caricaTiro':'log.caricaLancio',{p:nm(a.p)}));await endActivation()}
 async function actDribble(a,o){const p=a.p;const beyond={q:2*o.q-p.q,r:2*o.r-p.r};let res;G.busy=true;UI.mode=null;render();
   if(isSb(o)){log(tr('log.dribbleFree',{p:nm(o)}));res='att'}
@@ -1227,14 +1268,29 @@ function pickUp(p){const diff=1+pressure(p);const r=roll(p.st.stop,tr('dice.stop
   if(r.succ>=diff)gainBall(p,tr('why.pick'));else{log(tr('log.noControl',{p:nm(p)}));G.ball.pos=null;rebound(p,null,tr('sub.noControl',{p:nm(p)}),p.team)}}
 function passInfo(p,h,kind,extra=0){const d=hd(p,h);let pool,diff,mult;
   if(kind==='lancio'){pool=p.st.lancio;diff=d<=20?2:3;mult=d<=20?2:3}
+  else if(kind==='diretto'){pool=d<=10?p.st.passCorto:p.st.passLungo;diff=1+Math.floor(d/6);mult=d<=10?1:2}
   else if(d<=10){pool=p.st.passCorto;diff=1;mult=1}else{pool=p.st.passLungo;diff=2;mult=2}
   const pr=pressure(p),fr=inFront(p,h)?0:1;diff+=pr+fr+extra;
   return{d,pool,diff,mult,pr,fr,prob:pAtLeast(pool,diff)}}
 
+// Intercetto: 2d6 per toccare la palla, poi Stop per controllarla
+const P2D6=n=>n<=2?1:n>12?0:[0,0,36,35,33,30,26,21,15,10,6,3,1][n]/36;
+function roll2d6(label,need){const a=d6(),b=d6(),s=a+b,ok=s>=need;
+  if(!FASTM())showDice(label+` · 2d6 ≥ ${need}: ${s} ${ok?'✓':'✗'}`,[a,b],null,null,true);return{s,ok}}
+function interceptInfo(o,p,h,I,air){const dd=hd(o,h);if(dd>1)return null;const good=o.st.intercetto>=4,close=hd(p,h)<=2;
+  const fast=!air&&I.d>10,stop=Math.max(1,o.st.stop-(fast?1:0));
+  if(dd===0){const need=good?5:6;return{on:true,need,close:false,p:P2D6(need),canCtrl:inFront(o,p),stop}}
+  const rel=stepDiff(o.f,dirTo(o,h));if(rel>1)return null;
+  const need=(rel===0?(good?7:8):(good?8:9))+(close?1:0);
+  return{on:false,front:rel===0,need,close,p:P2D6(need),canCtrl:true,stop}}
+// probabilità che un passaggio preciso superi gli avversari sulla linea
+function passClear(p,target,kind,extra){const I=passInfo(p,target,kind,extra),air=kind==='lancio',L=line(p,target),last=air?Math.min(3,L.length-1):L.length-1,seen=new Set();let pr=1;
+  for(let i=1;i<last;i++)for(const o of G.players){if(o.team===p.team||isSb(o)||seen.has(o.id))continue;const ic=interceptInfo(o,p,L[i],I,air);if(!ic)continue;seen.add(o.id);pr*=1-ic.p}
+  return pr}
 async function resolvePass(p,target,kind,extra=0){
   const I=passInfo(p,target,kind,extra);
   log(tr(kind==='lancio'?'log.launchTo':'log.passTo',{p:nm(p),m:I.d*2,d:I.diff}));
-  const R=roll(I.pool,tr(kind==='lancio'?'dice.launch':I.d<=10?'dice.passShort':'dice.passLong',{p:nm(p)}),I.diff);G.lastTouch=p.team;
+  const R=roll(I.pool,tr(kind==='lancio'?'dice.launch':kind==='diretto'?'dice.passDirect':I.d<=10?'dice.passShort':'dice.passLong',{p:nm(p)}),I.diff);G.lastTouch=p.team;
   let fin=target;const def=I.diff-R.succ,margin=R.succ-I.diff;
   if(def>0){const map={1:3,2:0,3:-2,4:2,5:-1,6:1};
     const v=rollD6(tr('dice.devDir'));const dir=((dirTo(p,target)+map[v])%6+6)%6;fin=add(target,dir,def*I.mult);
@@ -1245,16 +1301,19 @@ async function resolvePass(p,target,kind,extra=0){
   const last=air?Math.min(3,path.length-1):path.length-1;
   for(let i=1;i<last;i++){const h=path[i];if(!inField(h))break;
     for(const o of opps(p.team)){if(tried.has(o.id)||isSb(o))continue;const dd=hd(o,h);if(dd>1)continue;if(dd===1&&!inFront(o,h))continue;
+      const ic=interceptInfo(o,p,h,I,air);if(!ic)continue;
       tried.add(o.id);await animBall(px(h),{air:false});
-      if(dd===0){
-        if(margin>=2){log(tr('log.findsSpace',{p:nm(o)}));continue}
-        if(rollD6(tr('dice.tunnel',{p:nm(o)}))===6){log(tr('log.tunnel',{p:nm(o)}));continue}
-        const r=roll(o.st.intercetto,tr('dice.interceptOn',{p:nm(o)}),2);G.lastTouch=o.team;
-        if(r.succ>=2){G.subWhy=tr('sub.intercept',{p:nm(o)});return gainBall(o,tr('why.intercept'))}
-        log(tr('log.hits',{p:nm(o)}));G.offList=null;return deflect(h,force,o,0,tr('sub.hits',{p:nm(o)}))}
-      const r=roll(o.st.intercetto-1-(!air&&I.d>10?1:0),tr('dice.interceptStretch',{p:nm(o)}),2);
-      if(r.succ>=2){G.lastTouch=o.team;G.subWhy=tr('sub.intercept',{p:nm(o)});return gainBall(o,tr('why.intercept'))}
-      if(r.succ===1){G.lastTouch=o.team;log(tr('log.touches',{p:nm(o)}));G.offList=null;return deflect(h,force,o,0,tr('sub.touches',{p:nm(o)}))}}}
+      // 1) la tocca? 2d6 contro la soglia (davanti, di lato o sulla traiettoria)
+      const t=roll2d6(tr(ic.on?'dice.icOn':ic.front?'dice.icFront':'dice.icSide',{p:nm(o)})+(ic.close?tr('dice.closeRange'):''),ic.need);
+      if(!t.ok){if(ic.on){log(tr('log.tunnel',{p:nm(o)}));sub(tr('sub.tunnel',{p:nm(o)}),p.team)}else log(tr('log.missesIt',{p:nm(o)}));continue}
+      G.lastTouch=o.team;
+      // 2) la controlla o la devia? Stop (2 successi); sulla traiettoria solo se è girato verso la palla
+      let ctrl=false;if(ic.canCtrl){const r=roll(ic.stop,tr('dice.icCtrl',{p:nm(o)}),2);ctrl=r.succ>=2}
+      if(ctrl&&!ic.on&&playerAt(h))ctrl=false;
+      if(!ctrl){log(tr(ic.on?'log.hits':'log.touches',{p:nm(o)}));G.offList=null;return deflect(h,force,o,0,tr(ic.on?'sub.hits':'sub.touches',{p:nm(o)}))}
+      // il difensore va sul pallone (si allunga sulla traiettoria), resta fermo e girato verso chi ha passato
+      if(!ic.on){o.q=h.q;o.r=h.r;await wait(120)}o.state='fermo';o.f=dirTo(o,p);
+      G.subWhy=tr('sub.intercept',{p:nm(o)});return gainBall(o,tr('why.intercept'))}}
   if(air&&I.d>22){const A=BALL.vis.cur,B=px(fin),mid={x:(A.x+B.x)/2,y:(A.y+B.y)/2};
     await animBall(mid,{air:true,half:1});G.ball.flight={h:fin,turn:G.turn+1,mid,off:G.offList,team:p.team};log(tr('log.inFlight'));sub(tr('sub.inFlight'),p.team);return}
   await animBall(px(fin),{air});
@@ -1283,6 +1342,8 @@ function shotGeo(from,team,z,giro=false){const tg=zoneHex(z,team),goal=tgt(team)
     if(!best)continue;
     // a giro la palla aggira i corpi: contano solo quelli sulla linea vicino a chi calcia (la barriera)
     if(giro){if(best.dd===0&&hd(o,from)<=6)blockers.push({o,dd:0,i:best.i,wall:true});continue}
+    // tiro alto: chi è sulla linea vicino a chi calcia (la barriera) salta per deviarlo
+    if(high&&best.dd===0&&hd(o,from)>2&&hd(o,from)<=6){blockers.push({o,dd:0,i:best.i,wall:true});continue}
     if(best.dd===0||(best.dd===1&&!high&&inFront(o,path[best.i]))){if(!high||hd(o,from)<=2)blockers.push({o,dd:best.dd,i:best.i})}
     if(best.dd===0)cover++}
   blockers.sort((a,b)=>a.i-b.i);
@@ -1298,11 +1359,11 @@ async function resolveShot(p,z,extra,piatto,kind){const team=p.team,def=other(te
   log(tr(giro?'log.shotGiro':piatto?'log.shotPiatto':'log.shot',{p:nm(p),z:zn(z).toLowerCase(),m:d*2}));if(giro)sub(tr('sub.giro',{p:nm(p)}),team);G.ball={holder:null,pos:null,flight:null};G.lastTouch=team;
   const SE=out=>ev('shot',{kind:kind||(giro?'giro':piatto?'piatto':'tiro'),d,xg:+xg.toFixed(3),out,by:p.tpl,zone:z.k,team});
   const P=roll(precPool(p,giro?'giro':piatto),tr(giro?'dice.precGiro':piatto?'dice.precPiatto':'dice.prec',{p:nm(p)}),pd);const m=P.succ-pd;
-  const PW=roll(giro?giroPow(p):piatto?PIATTO_POT:Math.max(1,p.st.tiroPot-Math.floor(d/10)),tr(giro?'dice.powGiro':piatto?'dice.powPiatto':'dice.pow',{p:nm(p)}),null);
+  const PW=roll(giro?giroPow(p):piatto?piattoPow(p):Math.max(1,p.st.tiroPot-Math.floor(d/10)),tr(giro?'dice.powGiro':piatto?'dice.powPiatto':'dice.pow',{p:nm(p)}),null);
   const geo=shotGeo(p,team,z,giro);const fast=!piatto&&!giro;
   for(const b of geo.blockers){const o=b.o;
-    if(b.wall){if(m>=1){log(tr('log.overWall',{p:nm(o)}));continue}
-      const r=roll(o.st.intercetto-2,tr('dice.wallJump',{p:nm(o)}),2);if(r.succ<2){log(tr('log.overWall',{p:nm(o)}));continue}
+    if(b.wall){if(m>=(giro?1:2)){log(tr('log.overWall',{p:nm(o)}));continue}
+      const r=roll(o.st.intercetto-(giro?2:1),tr('dice.wallJump',{p:nm(o)}),2);if(r.succ<2||(!giro&&rollD6(tr('dice.wallTiming',{p:nm(o)}))===1)){log(tr('log.overWall',{p:nm(o)}));continue}
       G.lastTouch=def;await animBall(px(o),{});log(tr('log.deflected',{p:nm(o)}));SE('murato');return deflect(o,'murato',o,0,tr('sub.blocked',{p:nm(o)}))}
     if(b.dd===0){if(m>=2){log(tr('log.shotGap',{p:nm(o)}));continue}
       if(rollD6(tr('dice.legs',{p:nm(o)}))===6){log(tr('log.throughLegs'));continue}}
@@ -1315,8 +1376,8 @@ async function resolveShot(p,z,extra,piatto,kind){const team=p.team,def=other(te
   if(m===-1){
     if(z.r===0&&d6()<=3){await animBall({x:M(z).x,y:team==='A'?PL.T-3*KM:PL.B+3*KM},{fast});SE('fuori');return missed(team,tr('res.overBar'),tr('res.overBarMsg'))}
     const adj=ZONES.filter(q=>Math.abs(q.r-z.r)+Math.abs(q.c-z.c)===1&&!(piatto&&q.r===0));zone=adj[(d6()-1)%adj.length];log(tr('log.slightly',{z:zn(zone).toLowerCase()}))}
-  else if(m===-2){const gp=px(tgt(team));await animBall({x:CX+(team==='A'?1:-1)*(z.c===1?0:(z.c-1)*3.66)*KM,y:team==='A'?PL.T-(z.c===1?2.4*KM:0):PL.B+(z.c===1?2.4*KM:0)},{fast});log('<b>'+tr('log.post')+'</b>');SE('legno');G.lastTouch=team;return rebound(tgt(team),intoField(def),tr('sub.post'),team)}
-  else if(m<=-3){await animBall({x:CX+(team==='A'?1:-1)*(z.c-1)*7*KM+(d6()-3.5)*KM,y:team==='A'?PL.T-2*KM:PL.B+2*KM},{fast});SE('fuori');return missed(team,tr('res.wide'),tr('res.wideMsg'))}
+  else if(m===-2&&d6()<=2){const gp=px(tgt(team));await animBall({x:CX+(team==='A'?1:-1)*(z.c===1?0:(z.c-1)*3.66)*KM,y:team==='A'?PL.T-(z.c===1?2.4*KM:0):PL.B+(z.c===1?2.4*KM:0)},{fast});log('<b>'+tr('log.post')+'</b>');SE('legno');G.lastTouch=team;return rebound(tgt(team),intoField(def),tr('sub.post'),team)}
+  else if(m<=-2){await animBall({x:CX+(team==='A'?1:-1)*(z.c-1)*7*KM+(d6()-3.5)*KM,y:team==='A'?PL.T-2*KM:PL.B+2*KM},{fast});SE('fuori');return missed(team,tr('res.wide'),tr('res.wideMsg'))}
   const gk=gkVs(team),gi=geo.gk;
   if(gi.none||gi.empty){await animBall(M(zone),{fast});SE('gol');
     return goalScored(team,tr(gi.none?'res.goalNoGk':gi.down?'res.goalGkDown':gi.beaten?'res.goalGkBeaten':'res.goalEmpty',{p:nm(p),c:clock()}))}
@@ -1393,7 +1454,7 @@ async function ballPhase(){const g=G;G.phase='palla';G.busy=true;G.act=null;UI.m
   if(G!==g)return;if(!G.over&&!G.pendingRestart&&G.carica)await caricaPhase();
   if(G!==g)return;if(!G.over&&!G.pendingRestart&&G.pending){const pe=G.pending,p=byId(pe.from);G.pending=null;
     if(p&&isHolder(p)){if(pe.type==='piatto')await resolveShot(p,pe.zone,0,true,'piatto');
-      else{G.offList=pe.off||null;const d=hd(p,pe.target);await resolvePass(p,pe.target,'pass',0);G.offList=null;ev('pass',{kind:'nello spazio',d,out:stateOutcome(p.team),by:p.tpl})}}}
+      else{G.offList=pe.off||null;const d=hd(p,pe.target);await resolvePass(p,pe.target,'pass',0);G.offList=null;ev('pass',{kind:'preciso',d,out:stateOutcome(p.team),by:p.tpl})}}}
   if(G!==g)return;G.busy=false;
   if(await settle()==='ok'&&G===g&&!G.over){endTurn();if(G.pendingRestart&&!G.over)await settle();else if(!G.over)toast(tr('toast.turn',{n:G.turn,who:teamLabel(G.cur).toLowerCase()}),G.cur)}
   render()}
@@ -1466,7 +1527,20 @@ async function setPieceFlow(){const g=G;const R=G.pendingRestart;G.pendingRestar
   if(mode==='piazza')await placementLoop(R);else if(R.type!=='inizio')log('<b>'+tr('log.quick')+'</b>');if(G!==g)return;
   G.sp=null;UI.placeWait=null;UI.placeSel=null;
   G.turn++;resetTurnFlags();G.phase='att';G.cur=T;G.restart={type:R.type,kicker:R.kicker};G.noOffside=['angolo','laterale','fondo'].includes(R.type);
-  G.busy=false;log(tr('log.whistle',{n:G.turn,c:clock()}),'t');toast(tr('toast.whistle'),T);render()}
+  G.busy=false;log(tr('log.whistle',{n:G.turn,c:clock()}),'t');toast(tr('toast.whistle'),T);render();
+  if(R.type==='punizione')await freeKick(byId(R.kicker),R)}
+// Punizione: a gioco fermo, dopo il piazzamento, il battitore sceglie subito la giocata (tutte immediate)
+async function freeKick(k,R){const g=G;if(!k||!isHolder(k)||G.over)return;const T=k.team;const a=startAct(k);G.busy=true;render();
+  const c=await ask(T,'freeKick',{p:k,indirect:!!R.indirect});if(G!==g)return;
+  if(c==='altro'){G.busy=false;if(isAI(T)){G.act=null;render()}else{render();openMenu(k)}return}
+  a.used=true;
+  if(c==='tiro'||c==='giro'){const z=await ask(T,'zone',{p:k,giro:c==='giro'});if(G!==g)return;
+    await resolveShot(k,z,0,c==='giro'?'giro':false,c==='giro'?'punizione a giro':'punizione')}
+  else{const kind=c==='lancio'?'lancio':'diretto';G.busy=false;
+    const h=await ask(T,'target',{p:k,kind,extra:0,msg:tr(kind==='lancio'?'hint.launchTarget':'hint.fkPass',{p:nm(k)})});if(G!==g)return;G.busy=true;
+    G.offList=offsideIds(T);const d=hd(k,h);await resolvePass(k,h,kind,0);G.offList=null;ev('pass',{kind:kind==='lancio'?'lancio':'diretto',d,out:stateOutcome(T),by:k.tpl})}
+  if(G!==g)return;G.busy=false;
+  if(await settle()==='ok'&&!G.over&&G.act)await endActivation();else render()}
 async function placementLoop(R){const g=G;const ready={A:false,D:false},moves={A:0,D:0};let team=R.team;
   log(tr('log.placement'));
   while(!(ready.A&&ready.D)){if(G.over)return;
@@ -1507,12 +1581,12 @@ function estShot(p,h,z,piatto,extra=0){const team=p.team,d=dG(h,team);const giro
   const pd=1+Math.floor(d/8)+pressAt(h,team)+extra+(z.r===0?1:0);
   const P0=precPool(p,giro?'giro':piatto);let pr=pAtLeast(P0,pd);const geo=shotGeo(h,team,z,giro);
   if(giro)pr=pAtLeast(P0,pd)+(pAtLeast(P0,pd-1)-pAtLeast(P0,pd))*0.5*0.5;
-  for(const b of geo.blockers){if(b.wall){pr*=1-pAtLeast(b.o.st.intercetto-2,2)*(1-pAtLeast(P0,pd+1));continue}const pi=b.o.st.intercetto-(b.dd===1?1:0);pr*=b.dd===0?0.17:Math.pow(0.5,Math.max(1,pi))}
+  for(const b of geo.blockers){if(b.wall){pr*=1-pAtLeast(b.o.st.intercetto-(giro?2:1),2)*(giro?1:5/6)*(1-pAtLeast(P0,pd+(giro?1:2)));continue}const pi=b.o.st.intercetto-(b.dd===1?1:0);pr*=b.dd===0?0.17:Math.pow(0.5,Math.max(1,pi))}
   const gi=geo.gk;if(gi.none||gi.empty)return pr*0.97;
-  const pot=giro?giroPow(p):piatto?PIATTO_POT:Math.max(1,p.st.tiroPot-Math.floor(d/10));
+  const pot=giro?giroPow(p):piatto?piattoPow(p):Math.max(1,p.st.tiroPot-Math.floor(d/10));
   const dm=Math.floor(Math.max(0,d-10)/5),adv=gi.adv?(z.r===0?2:-1):0;
   const k=Math.max(0,Math.round(pot/2)+z.v+geo.cover+gi.piaz+adv+proxBonus(d)+(giro?GIRO_EFF:0)-dm);
-  const gk=gkVs(team);return k<=0||!gk?0:pr*(1-pAtLeast(gk.st.riflessi,k))}
+  const gk=gkVs(team);return (k<=0||!gk?0:pr*(1-pAtLeast(gk.st.riflessi,k)))*(giro?0.75:1)}
 function bestShot(p,h,piatto,extra=0,zones=ZONES){let best={xg:0,z:ZONES[3]};for(const z of zones){const x=estShot(p,h,z,piatto,extra);if(x>best.xg)best={xg:x,z}}return best}
 const FASTZ=[ZONES[0],ZONES[2],ZONES[3],ZONES[5]];
 const xgFast=(p,h)=>dG(h,p.team)>22?0:bestShot(p,h,false,0,FASTZ).xg;
@@ -1523,8 +1597,7 @@ function riskAt(p,h){let keep=1;for(const o of G.players){if(o.team===p.team||is
 const Vc=(p,h,S)=>V(p,h,S)-S.loss*0.9*riskAt(p,h);
 function estPass(p,target,kind,extra=0,rc){const I=passInfo(p,target,kind,extra);let pr=I.prob+(1-I.prob)*0.25;
   const L=line(p,target),air=kind==='lancio',last=air?Math.min(3,L.length-1):L.length-1,seen=new Set();
-  for(let i=1;i<last;i++)for(const o of G.players){if(o.team===p.team||isSb(o)||seen.has(o.id))continue;const dd=hd(o,L[i]);if(dd>1)continue;if(dd===1&&!inFront(o,L[i]))continue;seen.add(o.id);
-    pr*=dd===0?(I.pool-I.diff>=2?0.45:0.17):Math.pow(0.5,Math.max(1,o.st.intercetto-1-(!air&&I.d>10?1:0)))}
+  for(let i=1;i<last;i++)for(const o of G.players){if(o.team===p.team||isSb(o)||seen.has(o.id))continue;const ic=interceptInfo(o,p,L[i],I,air);if(!ic)continue;seen.add(o.id);pr*=1-ic.p}
   rc=rc||playerAt(target);if(rc&&rc.team===p.team){const base=air?3:(I.d>10?2:1);pr*=pAtLeast(rc.st.stop-(same(rc,target)?0:1),base+pressAt(rc,rc.team))}
   if(air)for(const o of G.players)if(o.team!==p.team&&hd(o,target)<=1)pr*=0.6;
   return pr}
@@ -1546,15 +1619,15 @@ async function aiLoose(team,actors){const bh=ballHex();const S=attS(team);
   const all=G.players.filter(q=>q.team===team&&!q.gk);const chaser=all.length?all.reduce((a,b)=>hd(b,bh)<hd(a,bh)?b:a):null;
   const p=chaser&&actors.includes(chaser)?chaser:actors.slice().sort((x,y)=>hd(x,bh)-hd(y,bh))[0];
   await aiAct(p,async a=>{if(p===chaser||hd(p,bh)<=4)aiMoveToward(a,bh,tgt(team));else await aiOffball(a,S)})}
-function carrierOptions(p,S,first,restr){const team=p.team,opts=[];const LS=FULL?S.loss*0.5:S.loss;const v0=Vc(p,p,S);const off=new Set(offsideIds(team));
+function carrierOptions(p,S,first,restr,moved=false){const team=p.team,opts=[];const LS=FULL?S.loss*0.5:S.loss;const v0=Vc(p,p,S);const off=new Set(offsideIds(team));
   if(!restr||restr==='punizione'){
     if(first){const bs=bestShot(p,p,false,0);if(bs.xg>=S.shootMin)opts.push({u:10*bs.xg*S.carica*1.2+0.5,kind:'cTiro',xg:bs.xg});
       if(dG(p,team)<=PIATTO_MAX){const bp=bestShot(p,p,true,0);if(bp.xg>=S.shootMin*0.8)opts.push({u:10*bp.xg*1.2+0.5,kind:'piatto',z:bp.z,xg:bp.xg})}}
     else if(dG(p,team)<=PIATTO_MAX){const bp=bestShot(p,p,true,0);if(bp.xg>=S.shootMin)opts.push({u:10*bp.xg*1.1+0.4,kind:'piatto',z:bp.z,xg:bp.xg})}}
   const maxD=restr==='laterale'?10:20;
   for(const q of G.players){if(q.team!==team||q===p)continue;const d=hd(p,q);if(d>24)continue;
-    if(first&&d<=NOW_MAX&&!off.has(q.id)){const pr=estPass(p,q,'pass',0,q);opts.push({u:pr*Vc(q,q,S)-(1-pr)*LS,kind:'passNow',h:{q:q.q,r:q.r}})}
-    if(!off.has(q.id))for(const tg of [{q:q.q,r:q.r},add(q,dirTo(q,tgt(team)))]){if(!inField(tg)||(playerAt(tg)&&!same(tg,q))||hd(p,tg)>maxD||same(tg,p))continue;
+    if(d<=tRange('diretto',p)&&!off.has(q.id)){const pr=estPass(p,q,'diretto',0,q);opts.push({u:pr*Vc(q,q,S)-(1-pr)*LS+(first?0:0.05),kind:'passNow',h:{q:q.q,r:q.r}})}
+    if(!off.has(q.id)&&!moved)for(const tg of [{q:q.q,r:q.r},add(q,dirTo(q,tgt(team)))]){if(!inField(tg)||(playerAt(tg)&&!same(tg,q))||hd(p,tg)>maxD||same(tg,p))continue;
       const pr=estPass(p,tg,'pass',0,q)*(first?0.85:1);opts.push({u:pr*Vc(q,tg,S)-(1-pr)*LS,kind:'pass',h:tg})}
     if(first&&(S.lancio||restr==='angolo'||restr==='fondo')&&restr!=='laterale'&&d>12&&!off.has(q.id)){const pr=estPass(p,q,'lancio',0,q)*0.8;opts.push({u:pr*V(q,q,S)-(1-pr)*S.loss,kind:'cLancio'})}}
   if(!restr)for(const o of dribbleTargets(p)){const b={q:2*o.q-p.q,r:2*o.r-p.r};const pw=pWinDuel(p.st.dribbling,o.st.contrasto);
@@ -1576,13 +1649,13 @@ async function aiAttack(team,actors,S){const h=holderP();
   if(carrierFree){await aiAct(h,a=>aiCarrierLater(a,S));return}
   await passTeam(team)}
 async function aiCarrierLater(a,S){const p=a.p,team=p.team;const restr=restrictedKick(a);
-  const exec=async o=>{if(o.kind==='pass'){await actSpacePass(a,o.h);return true}if(o.kind==='piatto'){await actPiatto(a,o.z);return true}
+  const exec=async o=>{if(o.kind==='pass'){await actSpacePass(a,o.h);return true}if(o.kind==='passNow'){await actPassNow(a,o.h);return true}if(o.kind==='piatto'){await actPiatto(a,o.z);return true}
     if(o.kind==='dribble'){const ok=await actDribble(a,o.o);return !ok}return false};
   let opts=carrierOptions(p,S,false,restr);if(await exec(opts[0]))return;
   if(!G.act||G.over)return;
   if(!a.moved&&!restr){let best=null,bs=Vc(p,p,S)+(FULL?0.02:0.2);
     for(const o of a.opts.values()){const s=Vc(p,o.h,S);if(s>bs){bs=s;best=o}}
-    if(best){doMove(a,best);if(G.over||!G.act||!isHolder(p))return;opts=carrierOptions(p,S,false,restr).filter(o=>o.kind!=='dribble');await exec(opts[0]);return}}
+    if(best){doMove(a,best);if(G.over||!G.act||!isHolder(p))return;opts=carrierOptions(p,S,false,restr,true).filter(o=>o.kind!=='dribble');await exec(opts[0]);return}}
   aiFace(a,tgt(team))}
 async function aiOffball(a,S){const p=a.p,team=p.team,car=holderP(),L=offsideLine(team);
   const cand=[{h:{q:p.q,r:p.r},o:null}];for(const o of a.opts.values())cand.push({h:o.h,o});
@@ -1644,6 +1717,9 @@ function aiDecide(team,kind,data){
       if(data.giro)return bestShot(data.p,data.p,'giro',0,GIRO_Z.map(i=>ZONES[i])).z;
       return bestShot(data.p,data.p,!!data.piatto,data.extra||0,data.piatto?[ZONES[3],ZONES[4],ZONES[5]]:ZONES).z}
     case'target':return aiBestTarget(data.p,data.kind,data.extra||0);
+    case'freeKick':{const p=data.p,S=attS(p.team);if(data.indirect)return'altro';const d=dG(p,p.team);
+      const xs=d<=18?bestShot(p,p,false,0).xg:0,xgi=canGiro(p)?bestShot(p,p,'giro',0,GIRO_Z.map(i=>ZONES[i])).xg:0;
+      if(Math.max(xs,xgi)>=S.shootMin*0.7)return xgi>xs?'giro':'tiro';return 'altro'}
     case'afterFinta':{const p=data.p,S=attS(p.team);const xp=data.piatto?bestShot(p,p,true,1).xg:0;if(xp>=S.shootMin)return'piatto';
       return aiBestTarget(p,'pass',1)?'pass':'keep'}
     case'restartMode':return ['laterale','fondo'].includes(data.R.type)?'rapida':'piazza';
@@ -1678,9 +1754,9 @@ const LESSONS=[
  {ctrl:IDLE,scen:[['A','Ala',6,20,0],['D','Centrale',30,5,3],['D','Portiere',19,0,3]],
   steps:[{},{ok:()=>has('move',e=>e.by==='Ala'&&e.corsa)&&G.turn>TUT.turn0},{ok:()=>has('move',e=>e.by==='Ala'&&e.d>=6)},{ok:()=>has('rotate')}]},
  {ctrl:IDLE,scen:[['A','Regista',19,18,0],['A','Mezzala',13,14,0],['A','Punta',24,11,0],['D','Centrale',12,6,3],['D','Centrale',27,6,3],['D','Portiere',19,0,3]],
-  steps:[{},{ok:()=>has('pass',e=>e.kind==='sui piedi'&&e.out==='ok')},{ok:()=>G.turn>TUT.turn0},{mark:[24,8],ok:()=>has('pass',e=>e.kind==='nello spazio'&&e.out==='ok')},{}]},
+  steps:[{},{ok:()=>has('pass',e=>e.kind==='diretto'&&e.out==='ok')},{ok:()=>G.turn>TUT.turn0},{mark:[24,8],ok:()=>has('pass',e=>e.kind==='preciso'&&e.out==='ok')},{}]},
  {ctrl:IDLE,scen:[['A','Regista',19,16,0],['A','Punta',21,9,0],['A','Ala',8,11,0],['D','Centrale',16,8,3],['D','Centrale',23,8,3],['D','Portiere',19,0,3]],
-  steps:[{},{mark:[21,4],ok:()=>has('pass',e=>e.kind==='nello spazio'&&e.out==='ok')&&holderP()&&holderP().tpl==='Punta'}]},
+  steps:[{},{mark:[21,4],ok:()=>has('pass',e=>e.kind==='preciso'&&e.out==='ok')&&holderP()&&holderP().tpl==='Punta'}]},
  {ctrl:{A:'ai',D:'human'},strat:mkStrat({att:'possesso'},'zona'),scen:[['A','Regista',19,15,0],['A','Ala',9,11,0],['A','Punta',23,9,0],['D','Centrale',18,8,3],['D','Terzino',11,8,3],['D','Mediano',20,11,3],['D','Portiere',19,0,3]],
   steps:[{},{ok:()=>G.over&&G.result.cat==='recupero'}]},
  {ctrl:IDLE,scen:[['A','Punta',20,8,0],['A','Mezzala',14,7,0],['D','Centrale',21,5,3],['D','Portiere',19,0,3]],
@@ -1798,9 +1874,10 @@ function availableActions(a){const p=a.p,hold=isHolder(p),out=[];const rs=restri
   const rc=tr(a.rotFree?'menu.free':'menu.onePoint');const canRot=a.rotFree||(a.moved?a.rem>=1:ptsFor(a).sc>=1);
   if(canRot&&!a.moved){out.push({k:'rotL',ic:'⟲',lb:tr('menu.rotL'),h:rc});out.push({k:'rotR',ic:'⟳',lb:tr('menu.rotR'),h:rc})}
   if(hold){out.push({sep:1});
-    if(firstAction(a)&&nowTargets(p).length)out.push({k:'passNow',ic:'⇉',lb:tr(rs==='laterale'?'menu.throwNow':'menu.passNow'),h:tr('menu.passNowH'),cls:'now'});
-    out.push({k:'pass',ic:'⇢',lb:tr(rs==='laterale'?'menu.throwSpace':'menu.passSpace'),h:tr('menu.passSpaceH',{m:rs==='laterale'?20:40})});
-    if(!NOMOVE.includes(rs)){const gd=dG(p,p.team);if(gd<=PIATTO_MAX)out.push({k:'piatto',ic:'◔',lb:tr('menu.piatto'),h:tr(firstAction(a)?'menu.piattoNow':'menu.piattoLater',{m:gd*2}),cls:firstAction(a)?'now':''})}
+    const run=a.moved&&p.state==='corsa';
+    out.push({k:'passNow',ic:'⇉',lb:tr(rs==='laterale'?'menu.throwNow':'menu.passNow'),h:tr('menu.passNowH',{m:tRange('diretto',p)*2})+(run?tr('menu.onTheRun'):''),cls:'now'});
+    if(!a.moved)out.push({k:'pass',ic:'⇢',lb:tr(rs==='laterale'?'menu.throwSpace':'menu.passSpace'),h:tr('menu.passSpaceH',{m:rs==='laterale'?20:40})});
+    if(!NOMOVE.includes(rs)){const gd=dG(p,p.team);if(gd<=PIATTO_MAX)out.push({k:'piatto',ic:'◔',lb:tr('menu.piatto'),h:tr('menu.piattoNow',{m:gd*2,n:piattoPow(p)}),cls:'now'})}
     if(firstAction(a)&&rs!=='laterale'&&rs!=='inizio'){out.push({k:'cLancio',ic:'⤴',lb:tr(rs==='angolo'?'menu.cross':'menu.launch'),h:tr('menu.chargeH'),cls:'warn'});
       if(!rs||rs==='punizione')out.push({k:'cTiro',ic:'◎',lb:tr('menu.chargeShot'),h:tr('menu.chargeShotH',{m:dG(p,p.team)*2}),cls:'warn'})}
     if((!a.moved||a.rem>=2)&&!rs&&dribbleTargets(p).length){const mo=a.moved&&p.state==='corsa';out.push({k:'dribble',ic:'✦',lb:tr('menu.dribbling'),h:tr('menu.dribblingH',{n:p.st.dribbling+(mo?1:0)})+(mo?tr('menu.momentum'):'')})}}
@@ -1949,19 +2026,29 @@ function tick(now){
   requestAnimationFrame(tick)}
 
 // ===================== Rendering =====================
-function targetMode(){if(UI.wait)return UI.wait;if(G.act&&UI.mode==='pass')return{p:G.act.p,kind:'pass',extra:0};
+function targetMode(){if(UI.wait)return UI.wait;if(G.act&&UI.mode==='passNow')return{p:G.act.p,kind:'diretto',extra:0,now:true};if(G.act&&UI.mode==='pass')return{p:G.act.p,kind:'pass',extra:0};
   if(G.act&&UI.mode==='passNow')return{p:G.act.p,kind:'pass',extra:0,now:true};return null}
+// Mappa di probabilità sui bersagli di passaggi e lanci (ricalcolata solo quando cambia la situazione)
+let HEAT=null,HEATK='';
+function renderHeat(){const tm=targetMode();
+  if(!HEAT||!HEAT.isConnected){HEAT=document.createElementNS(SVGNS,'g');HEAT.setAttribute('pointer-events','none');HL.parentNode.insertBefore(HEAT,HL);HEATK=''}
+  if(!tm||isAI(tm.p.team)){if(HEATK){HEAT.innerHTML='';HEATK=''}return}
+  const key=[tm.p.id,tm.kind,tm.now?1:0,tm.extra||0,tm.p.q,tm.p.r,tm.p.f,G.turn,G.players.map(q=>q.q+','+q.r).join(';')].join('|');if(key===HEATK)return;HEATK=key;HEAT.innerHTML='';
+  const kind=tm.now?'diretto':tm.kind,R=tRange(kind,tm.p);
+  for(const h of FIELD){if(hd(tm.p,h)>R||!validTarget(tm,h))continue;const I=passInfo(tm.p,h,kind,tm.extra);const q=playerAt(h);
+    const pr=I.prob*passClear(tm.p,h,kind,tm.extra);poly(HEAT,h,probCol(pr,q&&q.team===tm.p.team?.6:.32),q&&q.team===tm.p.team?probCol(pr,1):'none',q?1.5:0)}}
 function renderField(){HL.innerHTML='';FX.innerHTML='';const a=G.act;const human=!isAI(G.cur);
   if(a&&human&&UI.mode==='move'&&!a.moved&&!G.over){for(const o of a.opts.values()){const runZone=o.lim===a.pts.run&&!o.back&&a.pts.run>a.pts.sc;
       poly(HL,o.h,o.back?'rgba(160,190,255,.22)':runZone?'rgba(255,224,102,.20)':'rgba(255,255,255,.20)')}
     if(UI.hover){const o=a.opts.get(K(UI.hover));if(o){const A=px(a.p),B=px(o.h);mk(HL,'line',{x1:A.x,y1:A.y,x2:B.x,y2:B.y,stroke:'#fff','stroke-width':2,'stroke-dasharray':'2 4','stroke-linecap':'round'});poly(HL,o.h,'rgba(255,255,255,.45)','#fff',1.5)}}}
   if(a&&UI.mode==='dribble')for(const o of dribbleTargets(a.p))poly(HL,o,'rgba(255,110,80,.5)','#ffb0a0',1.5);
-  if(a&&UI.mode==='passNow')for(const q of nowTargets(a.p))poly(HL,q,'rgba(143,208,255,.35)','#bfe6ff',1.5);
+  renderHeat();
+  if(a&&UI.mode==='passNow')for(const q of nowTargets(a.p))poly(HL,q,'rgba(0,0,0,0)','#bfe6ff',1.5);
   if(a&&!G.over){const c=px(a.p),R=S*SQ3*3.5,a1=(dirAng(a.p.f)-90)*Math.PI/180,a2=(dirAng(a.p.f)+90)*Math.PI/180;
     mk(HL,'path',{d:`M${c.x},${c.y}L${c.x+R*Math.cos(a1)},${c.y+R*Math.sin(a1)}A${R},${R} 0 0 1 ${c.x+R*Math.cos(a2)},${c.y+R*Math.sin(a2)}Z`,fill:'rgba(255,255,255,.06)',stroke:'rgba(255,255,255,.22)','stroke-dasharray':'3 3'})}
   const tm=targetMode();
   if(tm&&UI.hover&&validTarget(tm,UI.hover)){const L=line(tm.p,UI.hover);L.slice(1,-1).forEach(h=>inField(h)&&poly(HL,h,'rgba(143,208,255,.22)'));
-    const A=px(tm.p),B=px(UI.hover);const I=passInfo(tm.p,UI.hover,tm.kind,tm.extra);
+    const A=px(tm.p),B=px(UI.hover);const I=passInfo(tm.p,UI.hover,tm.now?'diretto':tm.kind,tm.extra);
     if(tm.kind==='lancio'){const mx=(A.x+B.x)/2,my=(A.y+B.y)/2-Math.hypot(B.x-A.x,B.y-A.y)*0.25;mk(HL,'path',{d:`M${A.x},${A.y} Q${mx},${my} ${B.x},${B.y}`,fill:'none',stroke:'var(--air)','stroke-width':2,'stroke-dasharray':'6 4'})}
     else mk(HL,'line',{x1:A.x,y1:A.y,x2:B.x,y2:B.y,stroke:'var(--air)','stroke-width':2.2,'stroke-linecap':'round'});
     mk(HL,'circle',{cx:B.x,cy:B.y,r:S*(0.55+I.mult*0.35),fill:'rgba(143,208,255,.12)',stroke:'var(--air)','stroke-dasharray':'3 3'});
@@ -2056,7 +2143,7 @@ function renderCard(){const C=document.getElementById('card');
     p.st[k]=Math.max(0,Math.min(mx,p.st[k]+(+b.dataset.d)));renderCard()})}
 function updateTip(e){const h=UI.hover;let s='';
   if(h&&inField(h)&&ctx.classList.contains('hidden')&&!isEdit()){const tm=targetMode(),a=G.act;
-    if(tm&&validTarget(tm,h)){const I=passInfo(tm.p,h,tm.kind,tm.extra);const off=(tm.kind!=='lancio')?offsideIds(tm.p.team):[];const rc=playerAt(h);
+    if(tm&&validTarget(tm,h)){const I=passInfo(tm.p,h,tm.now?'diretto':tm.kind,tm.extra);const off=(tm.kind!=='lancio')?offsideIds(tm.p.team):[];const rc=playerAt(h);
       s=`<b>${tr(tm.kind==='lancio'?'tip.launch':tm.now?'tip.now':'tip.space')} · ${I.d*2} m</b><br>${tr('tip.dice',{n:I.pool,d:I.diff})}${I.pr?tr('tip.pressed'):''}${I.fr?tr('tip.outArc'):''}${tm.extra?tr('tip.finta'):''}<br>${tr('tip.precise',{p:pct(I.prob),m:I.mult*2})}${tm.kind==='lancio'&&I.d>22?'<br>'+tr('tip.nextTurn'):''}${rc&&off.includes(rc.id)?'<br><b style="color:#ffe066">'+tr('tip.offside')+'</b>':''}`}
     else if(a&&UI.mode==='move'&&!a.moved){const o=a.opts.get(K(h));if(o)s=`<b>${o.d*2} m</b> · ${tr('tip.cost',{c:o.cost,l:o.lim})}${o.back?tr('tip.back'):''}${!o.back&&o.d>=3?tr('tip.willRun'):''}`}
     else{const pl=playerAt(h);if(pl)s=`<b>${nm(pl)}</b>${isHolder(pl)?' · '+tr('tip.ball'):''}${pl.act&&G.phase==='att'?' · '+tr('tip.done'):''}${isSb(pl)?' · '+tr('st.unbalanced'):''}`}}
@@ -2081,7 +2168,8 @@ function reset(sc,opt){opt=opt||{};closeMenu();hideTip();subClear();clearTimeout
   if(!full)SCORE.azioni++;
   document.getElementById('dice').innerHTML='';document.getElementById('log').innerHTML='';
   log(tr('log.head',{s:sc.name,c:clock()}),'t');if(!full&&G.ctrl.A==='human')log(tr('log.startHint'));
-  buildStatic();buildPlayers();camReset();renderCoach();render();if(!full)toast(teamLabel(G.cur),G.cur);
+  buildStatic();buildPlayers();camReset();renderCoach();render();if(!full&&!sc.fk)toast(teamLabel(G.cur),G.cur);
+  if(sc.fk&&!full){restartFor('A','punizione',offToAx(sc.fk[0],sc.fk[1]),{});G.busy=true;setPieceFlow()}
   if(full)kickoff()}
 function startMatch(){const fa=document.getElementById('fmA').value,fd=document.getElementById('fmD').value;
   document.getElementById('gtype').value='partita';
@@ -2150,7 +2238,7 @@ function onLeft(h,e){if(modalOpen())return;if(isEdit()){editLeft(h);return}
   if(e&&lastPT!=='mouse'&&!(G.act&&UI.mode)){UI.hoverP=playerAt(h)||null;renderCard()}
   if(G.phase!=='att'||isAI(G.cur))return;const a=G.act;if(!a)return;
   if(UI.mode==='pass'){if(validTarget({p:a.p,kind:'pass'},h))actSpacePass(a,h);return}
-  if(UI.mode==='passNow'){if(validTarget({p:a.p,kind:'pass',now:true},h))actPassNow(a,h);return}
+  if(UI.mode==='passNow'){if(validTarget({p:a.p,kind:'diretto',now:true},h))actPassNow(a,h);return}
   if(UI.mode==='dribble'){const o=dribbleTargets(a.p).find(x=>same(x,h));if(o)actDribble(a,o).then(ok=>{if(ok&&G.act===a)setTimeout(()=>openMenu(a.p),380)});return}
   if(UI.mode==='move'&&!a.moved){const o=a.opts.get(K(h));if(o){hideTip();doMove(a,o);render();if(G.over||G.act!==a)return;
     if(!isHolder(a.p)&&!canTackle(a.p)){endActivation();return}
