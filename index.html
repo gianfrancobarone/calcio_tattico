@@ -410,8 +410,8 @@ const DICT={it:{
  'hint.pass':"<b>{p}</b>: {LC} sul compagno o sul punto: passaggio preciso, parte a fine turno. I colori indicano la probabilità di riuscita.{ESC}",
  'hint.passNow':"<b>{p}</b>: {LC} sul compagno o su un punto: passaggio diretto, immediato. Verde = sicuro, rosso = rischioso.{ESC}",
  'hint.dribble':"<b>{p}</b>: {LC} sull'avversario da saltare.{ESC}",
- 'hint.selected':"<b>{p}</b> selezionato: usa {RC} sul calciatore per il menu azioni.",
- 'hint.idle':"Per agire usa {RC} su un calciatore {team} non grigio, oppure premi <b>Fine turno</b>.",
+ 'hint.selected':"<b>{p}</b> selezionato: usa {LC} sul calciatore per il menu azioni.",
+ 'hint.idle':"Per agire usa {LC} su un calciatore {team} non grigio, oppure premi <b>Fine turno</b>.",
  'hint.idleFull':" Puoi attivare al massimo {n} calciatori per turno: gli altri seguono il modulo da soli.",
  'hint.touchPreview':" <b>Tocca una volta</b> per l'anteprima, <b>di nuovo</b> per confermare.",
  'hint.launchTarget':"<b>Lancio</b>: clic sul punto di arrivo (max 90 m).",
@@ -421,6 +421,8 @@ const DICT={it:{
  'menu.dribble':"Conduci palla",
  'menu.moveH':"fino a {a} m dritto · {b} m cambiando direzione",
  'menu.half':" · mezzo movimento",
+ 'menu.rotBrake':" · perdi la corsa",
+ 'menu.remPts':" · ti restano {n}",
  'menu.free':"gratis",
  'menu.onePoint':"1 punto",
  'menu.rotL':"Ruota a sinistra",
@@ -820,15 +822,15 @@ const DICT={it:{
  // Tutorial: lezioni
  'tut.1.t':"Il campo e i turni",
  'tut.1.1':"Ogni <b>esagono</b> vale 2 metri e ogni <b>turno</b> 2 secondi di gioco. Le squadre attivano un calciatore alla volta, alternandosi: la <b>fascia colorata in alto</b> dice chi gioca. In questa lezione il rosso resta fermo.",
- 'tut.1.2':"Apri il menu del <b>numero 8</b>: <b>tasto destro</b> sulla pedina (su telefono o tablet: tieni premuto).",
+ 'tut.1.2':"Apri il menu del <b>numero 8</b>: <b>clicca</b> sulla pedina (su telefono o tablet: toccala).",
  'tut.1.3':"Scegli <b>Conduci palla</b> e clicca l'<b>esagono segnato</b>. Gli esagoni chiari sono quelli raggiungibili: con la palla si va più piano.",
  'tut.1.4':"Ora premi <b>Fine turno blu</b> nel tabellone. Quando entrambe le squadre hanno finito si gioca la <b>fase palla</b> e comincia un nuovo turno.",
  'tut.1.end':"Questo è il ciclo base: attivazioni alternate, fase palla, nuovo turno.",
  'tut.2.t':"Velocità e orientamento",
  'tut.2.1':"Ogni calciatore ha <b>Scatto</b> (quando parte da fermo) e <b>Corsa</b> (quando era già lanciato), con valori diversi con e senza palla. Li trovi nella <b>carta giocatore</b> passando sopra la pedina. Il <b>cono chiaro</b> indica dove guarda.",
  'tut.2.2':"Conduci l'<b>Ala (7)</b> in avanti di almeno 6 metri (3 esagoni): finirà <b>in corsa</b>, con l'anello giallo tratteggiato. Poi chiudi il turno con <b>Fine turno blu</b>.",
- 'tut.2.3':"Nel turno nuovo l'Ala parte già lanciata: può coprire molta più strada. Conducila per almeno 12 metri.",
- 'tut.2.4':"A fine corsa il calciatore si gira da solo: verso la porta se ha palla, verso il pallone se non ce l'ha. Per orientarlo diversamente, apri il menu <b>prima di muoverlo</b> e usa <b>Ruota a sinistra</b> o <b>a destra</b> (la prima rotazione è gratis, le altre costano movimento).",
+ 'tut.2.3':"Nel turno nuovo l'Ala parte già lanciata: può coprire molta più strada, ma solo andando <b>dritta</b>. Se sterza rallenta, e all'indietro in corsa non può andare. Conducila per almeno 12 metri.",
+ 'tut.2.4':"A fine movimento il calciatore guarda dove stava correndo. Se gli restano punti, dal menu puoi girarlo con <b>Ruota a sinistra</b> o <b>a destra</b> (1 punto ogni 60°, e in corsa perde la corsa); prima di muoverlo, invece, la prima rotazione è gratis. Prova a ruotare un calciatore.",
  'tut.2.end':"Ricorda: chi è già lanciato va più lontano, ma cambiare direzione lo frena.",
  'tut.3.t':"Passaggi",
  'tut.3.1':"Ci sono due passaggi. <b>Diretto</b>: parte subito, anche in corsa, verso un compagno o uno spazio; la portata dipende dalla tecnica e la precisione cala con la distanza. <b>Preciso</b>: solo da fermo, la palla parte a fine turno, così il compagno ha tempo di arrivarci, ed è più preciso. Quando scegli il bersaglio gli esagoni sono colorati: verde sicuro, rosso rischioso.",
@@ -863,8 +865,8 @@ const DICT={it:{
  'tut.9.end':"Complimenti, conosci tutte le regole! Puoi allenarti contro il computer, sfidare un amico o provare la <b>Partita 11 contro 11</b> dal pannello <b>Partita</b>.",
  // Regole (sezione in fondo alla pagina)
  'help.title':"Regole del prototipo (1 esagono = 2 m · 1 turno = 2 s)",
- 'help.1':"<b>Comandi</b>: <b>tasto destro</b> (su touch: tieni premuto) su un tuo calciatore non grigio apre il menu. <b>Clic sinistro</b> per destinazioni e bersagli, <b>Esc</b> annulla. <b>Fine turno</b>: la tua squadra smette di muovere, l'altra può continuare. Rotellina o pizzico per lo zoom, trascina per spostare la vista.",
- 'help.2':"<b>Velocità e orientamento</b>: Scatto e Corsa, diversi con palla e senza. Curva di 120° costa 1, di 180° costa 2 (e si usa lo Scatto). Indietro fino a 4 m. A fine corsa il calciatore si gira da solo verso il pallone (o verso la porta se ha palla) e, se non ha palla, la sua attivazione finisce lì; per orientarlo diversamente usa Ruota prima di muoverlo.",
+ 'help.1':"<b>Comandi</b>: <b>clic</b> (o tocco) su un tuo calciatore non grigio apre il menu; lo stesso clic sceglie destinazioni e bersagli, <b>Esc</b> annulla. <b>Fine turno</b>: la tua squadra smette di muovere, l'altra può continuare. Rotellina o pizzico per lo zoom, trascina per spostare la vista.",
+ 'help.2':"<b>Velocità e orientamento</b>: Scatto da fermo, Corsa se nel turno prima hai percorso almeno 6 m (o tutto lo scatto). In corsa: dritto a piena velocità, una sterzata di 60° toglie un quarto della velocità, una di 120° ti riporta allo scatto e ti fa perdere la corsa, indietro non si può (al massimo resti fermo e freni). Da fermo puoi andare in ogni direzione e arretrare fino a 4 m. A fine movimento il calciatore guarda dove stava correndo; se gli restano punti puoi girarlo (1 punto ogni 60°, e in corsa perde la corsa). Prima di muoverlo la prima rotazione è gratis.",
  'help.3':"<b>Passaggio diretto</b>: parte subito, anche dopo aver condotto, verso un compagno o uno spazio. La portata va da 20 a 40 m secondo la tecnica; la difficoltà sale ogni 12 m. Chi riceve ha mezzo movimento. <b>Passaggio preciso</b>: solo se il giocatore non si è mosso; fino a 40 m, parte nella fase palla ed è più preciso. Gli esagoni colorati mostrano la probabilità di riuscita.",
  'help.4':"<b>Intercetti</b>: per ogni avversario vicino alla traiettoria si tirano 2d6. Se la palla passa a 2 m nell'esagono davanti a lui: 8+ (42%), o 7+ (58%) se è bravo nell'intercetto. Negli esagoni davanti a lato: 9+ (28%) o 8+ (42%). Dietro di lui: non può intercettare. Se la palla passa a ridosso di chi calcia, serve 1 in più. Chi è sulla traiettoria la tocca con 6+ (72%) o 5+ (83%), altrimenti è tunnel. Se la tocca, la controlla con 2 successi di Stop (un dado in meno se il passaggio è lungo; sulla traiettoria solo se è girato verso la palla), altrimenti la devia. Gli esagoni colorati tengono già conto di questo rischio.",
  'help.5':"<b>Respinte</b>: direzione casuale; distanza d3 esagoni per il passaggio corto, d6 per passaggio lungo, tiro diretto e lancio, d6 + successi di potenza per il tiro. Se la palla esce dopo un tocco della difesa è angolo o rimessa per l'attacco.",
@@ -949,9 +951,9 @@ const pct=x=>Math.round(x*100)+'%';
 const ROLES={
   Portiere:{num:1,gk:true,st:{scatto:2,corsa:5,scattoP:1,corsaP:3,passCorto:3,passLungo:3,lancio:4,tiroPot:2,tiroPrec:1,dribbling:1,stop:4,contrasto:3,intercetto:3,finta:1,lettura:4,riflessi:5}},
   Terzino:{num:3,st:{scatto:4,corsa:8,scattoP:3,corsaP:6,passCorto:3,passLungo:3,lancio:3,tiroPot:2,tiroPrec:2,dribbling:3,stop:3,contrasto:4,intercetto:4,finta:2,lettura:3}},
-  Centrale:{num:5,st:{scatto:3,corsa:7,scattoP:2,corsaP:5,passCorto:3,passLungo:3,lancio:3,tiroPot:3,tiroPrec:2,dribbling:2,stop:3,contrasto:5,intercetto:4,finta:2,lettura:4}},
-  Mediano:{num:6,st:{scatto:3,corsa:8,scattoP:2,corsaP:6,passCorto:4,passLungo:4,lancio:3,tiroPot:3,tiroPrec:2,dribbling:2,stop:4,contrasto:4,intercetto:5,finta:2,lettura:5}},
-  Regista:{num:8,st:{scatto:3,corsa:7,scattoP:2,corsaP:5,passCorto:5,passLungo:5,lancio:5,tiroPot:3,tiroPrec:3,dribbling:3,stop:5,contrasto:3,intercetto:3,finta:4,lettura:5}},
+  Centrale:{num:5,st:{scatto:3,corsa:7,scattoP:3,corsaP:5,passCorto:3,passLungo:3,lancio:3,tiroPot:3,tiroPrec:2,dribbling:2,stop:3,contrasto:5,intercetto:4,finta:2,lettura:4}},
+  Mediano:{num:6,st:{scatto:3,corsa:8,scattoP:3,corsaP:6,passCorto:4,passLungo:4,lancio:3,tiroPot:3,tiroPrec:2,dribbling:2,stop:4,contrasto:4,intercetto:5,finta:2,lettura:5}},
+  Regista:{num:8,st:{scatto:3,corsa:7,scattoP:3,corsaP:5,passCorto:5,passLungo:5,lancio:5,tiroPot:3,tiroPrec:3,dribbling:3,stop:5,contrasto:3,intercetto:3,finta:4,lettura:5}},
   Mezzala:{num:10,st:{scatto:4,corsa:8,scattoP:3,corsaP:7,passCorto:5,passLungo:4,lancio:4,tiroPot:4,tiroPrec:4,dribbling:4,stop:4,contrasto:3,intercetto:3,finta:4,lettura:4}},
   Ala:{num:7,st:{scatto:5,corsa:9,scattoP:4,corsaP:8,passCorto:4,passLungo:3,lancio:4,tiroPot:3,tiroPrec:3,dribbling:5,stop:4,contrasto:2,intercetto:2,finta:5,lettura:3}},
   Punta:{num:9,st:{scatto:4,corsa:8,scattoP:3,corsaP:6,passCorto:3,passLungo:3,lancio:2,tiroPot:5,tiroPrec:4,dribbling:4,stop:4,contrasto:2,intercetto:2,finta:4,lettura:3}}
@@ -1149,7 +1151,16 @@ function ptsFor(a){const p=a.p,hb=isHolder(p);
   const run=Math.max(0,base-a.spent),sc=Math.max(0,sc0-a.spent);return{run,sc,max:Math.max(run,sc)}}
 function moveOptions(a){const p=a.p,pts=ptsFor(a);a.pts=pts;const res=new Map();
   for(const h of FIELD){const d=hd(p,h);if(d===0||d>pts.max||playerAt(h))continue;
-    const md=dirTo(p,h),sd=stepDiff(p.f,md);let cost,nf=md,back=false,lim=pts.run;
+    const md=dirTo(p,h),sd=stepDiff(p.f,md);let cost,nf=md,back=false,lim=pts.run,brake=false;
+    if(p.state==='corsa'){
+      // in corsa: dritto a piena velocità, sterzare costa velocità, indietro è impossibile (al massimo si frena restando fermi)
+      const ang=angDiff(angTo(p,h),dirAng(p.f));
+      if(ang<=30)cost=d;
+      else if(ang<=90){cost=d;lim=Math.max(pts.sc,Math.floor(pts.run*3/4))}
+      else if(ang<=150){cost=d+1;lim=pts.sc;brake=true}
+      else continue;
+      if(cost>lim||blockedPath(p,h))continue;
+      res.set(K(h),{h,cost,nf,back,d,lim,brake});continue}
     if(sd<=1)cost=d;
     else if(sd===2){cost=d+1;lim=pts.sc}
     else if(d<=2){cost=d;nf=p.f;back=true;lim=Math.min(pts.sc,2)}
@@ -1163,8 +1174,9 @@ const restrictedKick=a=>G.restart&&G.restart.kicker===a.p.id&&!a.moved?G.restart
 function doMove(a,o){const p=a.p;const cp=G.carica?byId(G.carica.id):null;const before=cp?hd(p,cp):0;
   // in corsa se ha percorso almeno 6 m, o tutto il suo scatto se è più corto (es. chi conduce palla lentamente)
   const hb0=isHolder(p);let sc0=hb0?p.st.scattoP:p.st.scatto;if(p.halfMove)sc0=Math.floor(sc0/2);const runMin=Math.max(2,Math.min(3,sc0));
-  p.q=o.h.q;p.r=o.h.r;p.f=o.nf;p.state=(!o.back&&o.d>=runMin)?'corsa':'fermo';p.moved=true;
-  if(!o.back){const look=isHolder(p)?tgt(p.team):ballHex();if(look&&!same(look,p))p.f=dirTo(p,look)}ev('move',{by:p.tpl,d:o.d,corsa:p.state==='corsa',ball:isHolder(p)});
+  p.q=o.h.q;p.r=o.h.r;p.f=o.nf;p.state=(!o.back&&!o.brake&&o.d>=runMin)?'corsa':'fermo';p.moved=true;
+  if(!o.back&&(isAI(p.team)||G.quiet)){const look=isHolder(p)?tgt(p.team):ballHex();if(look&&!same(look,p))p.f=dirTo(p,look)}
+  a.rotFree=false;ev('move',{by:p.tpl,d:o.d,corsa:p.state==='corsa',ball:isHolder(p)});
   a.moved=a.used=true;a.rem=o.lim-o.cost;UI.mode=null;
   log(tr(isHolder(p)?'log.dribbleMove':'log.move',{p:nm(p),m:o.d*2})+(o.back?tr('log.back'):'')+(p.state==='corsa'?tr('log.running'):'')+'.');
   if(cp&&p.team!==cp.team){const after=hd(p,cp);if(after<=2&&after<before){p.committed=true;log(tr('log.committed',{p:nm(p)}))}}
@@ -1670,16 +1682,25 @@ async function aiOffball(a,S){const p=a.p,team=p.team,car=holderP(),L=offsideLin
 function defPlan(S,team){const key=team+'|'+G.turn+'|'+G.actCount+'|'+(G.ball.holder||'')+'|'+G.players.length+'|'+G.phase;if(G._dp&&G._dp.key===key)return G._dp.t;
   const res={},car=holderP(),ball=ballHex()||kickSpot(),protect=ownG(team);
   const ds=G.players.filter(p=>p.team===team&&!p.gk),as=G.players.filter(p=>p.team!==team),used=new Set();
-  const gk=gkOf(team);if(gk){const L=line(protect,ball);res[gk.id]=L[Math.min(1,L.length-1)];
+  const gk=gkOf(team);if(gk){const L=line(protect,ball);
+    // se il portatore arriva vicino alla porta il portiere esce a chiudere lo specchio
+    const cd=car&&car.team!==team?hd(car,protect):99;res[gk.id]=L[Math.min(cd<=5?2:cd<=8?2:1,L.length-1)];
     if(G.ball.pos&&hd(gk,G.ball.pos)<=4&&hd(gk,G.ball.pos)<=Math.min(9,...as.map(x=>hd(x,G.ball.pos))))res[gk.id]=G.ball.pos}
   const loose=G.ball.pos||(G.ball.flight&&G.ball.flight.h);
   if(loose&&ds.length){const c=ds.slice().sort((x,y)=>hd(x,loose)-hd(y,loose))[0];res[c.id]=loose;used.add(c.id)}
+  // pericolosità: vicino alla porta e centrale conta di più; un'ala larga sulla linea laterale conta poco
+  const gc=axToOff(protect.q,protect.r).c,danger=x=>{const o=axToOff(x.q,x.r),dc=Math.abs(o.c-gc);return 30-Math.min(30,hd(x,protect))+(dc<=6?6:dc<=10?3:0)+(x===car?8:0)};
   if(car&&car.team!==team){const pr=ds.filter(d=>!used.has(d.id)).sort((x,y)=>hd(x,car)-hd(y,car));
     const cnt=S.press||(pr[0]&&hd(pr[0],car)<=S.engage?1:0);
-    for(const d of pr.slice(0,cnt)){if(hd(d,car)>S.engage)break;const L=line(car,protect);res[d.id]=L[Math.min(1,L.length-1)];used.add(d.id)}}
-  const threats=as.filter(x=>x!==car&&!x.gk).sort((x,y)=>hd(x,protect)-hd(y,protect));
-  for(const x of threats){let best=null;for(const d of ds){if(used.has(d.id))continue;const an=anchor(d,ball,S,true);const dist=hd(an,x);if(!S.press&&dist>5)continue;if(G.full&&dist>8)continue;if(!best||dist<best.dist)best={d,dist}}
-    if(best){const L=line(x,protect);res[best.d.id]=L[Math.min(1,L.length-1)];used.add(best.d.id)}}
+    for(const d of pr.slice(0,cnt)){if(hd(d,car)>S.engage)break;const L=line(car,protect);res[d.id]=L[Math.min(1,L.length-1)];used.add(d.id)}
+    // il portatore entro 30 m dalla porta ha sempre qualcuno davanti: temporeggia a 2-4 m, tra lui e la porta
+    if(!pr.slice(0,cnt).some(d=>used.has(d.id)&&hd(d,car)<=S.engage)&&hd(car,protect)<=15){const c2=pr.find(d=>!used.has(d.id));
+      if(c2){const L=line(car,protect);res[c2.id]=L[Math.min(2,L.length-1)];used.add(c2.id)}}}
+  const threats=as.filter(x=>x!==car&&!x.gk).sort((x,y)=>danger(y)-danger(x));
+  const free0=ds.filter(d=>!used.has(d.id)).length,outnum=free0<threats.length;
+  for(const x of threats){let best=null;for(const d of ds){if(used.has(d.id))continue;const an=anchor(d,ball,S,true);const dist=hd(an,x);if(!S.press&&dist>(outnum?8:5))continue;if(G.full&&dist>8)continue;if(!best||dist<best.dist)best={d,dist}}
+    // in inferiorità si copre il lato porta dell'attaccante (taglia il passaggio al centro), non lo si segue a uomo
+    if(best){const L=line(x,protect);res[best.d.id]=L[Math.min(outnum?2:1,L.length-1)];used.add(best.d.id)}}
   for(const d of ds)if(!used.has(d.id))res[d.id]=anchor(d,ball,S,true);
   G._dp={key,t:res};return res}
 function wantTackle(p,car,S){if(S.noTackle)return false;if(S.press)return true;return dG(car,car.team)<=16||pWinDuel(p.st.contrasto,car.st.dribbling)>=0.4}
@@ -1873,8 +1894,8 @@ function headFor(p,extra){const col=p.gk?'var(--GK)':`var(--${p.team})`;
 const NOMOVE=['laterale','angolo','fondo','inizio'];
 function availableActions(a){const p=a.p,hold=isHolder(p),out=[];const rs=restrictedKick(a);
   if(!a.moved&&!NOMOVE.includes(rs)){const pt=ptsFor(a);if(pt.max>0)out.push({k:'move',ic:'➤',lb:tr(hold?'menu.dribble':'menu.move'),h:tr('menu.moveH',{a:pt.run*2,b:pt.sc*2})+(p.halfMove?tr('menu.half'):'')})}
-  const rc=tr(a.rotFree?'menu.free':'menu.onePoint');const canRot=a.rotFree||(a.moved?a.rem>=1:ptsFor(a).sc>=1);
-  if(canRot&&!a.moved){out.push({k:'rotL',ic:'⟲',lb:tr('menu.rotL'),h:rc});out.push({k:'rotR',ic:'⟳',lb:tr('menu.rotR'),h:rc})}
+  const rc=tr(a.rotFree?'menu.free':'menu.onePoint')+(a.moved&&p.state==='corsa'?tr('menu.rotBrake'):'')+(a.moved?tr('menu.remPts',{n:a.rem}):'');const canRot=a.rotFree||(a.moved?a.rem>=1:ptsFor(a).sc>=1);
+  if(canRot){out.push({k:'rotL',ic:'⟲',lb:tr('menu.rotL'),h:rc});out.push({k:'rotR',ic:'⟳',lb:tr('menu.rotR'),h:rc})}
   if(hold){out.push({sep:1});
     const run=a.moved&&p.state==='corsa';
     out.push({k:'passNow',ic:'⇉',lb:tr(rs==='laterale'?'menu.throwNow':'menu.passNow'),h:tr('menu.passNowH',{m:tRange('diretto',p)*2})+(run?tr('menu.onTheRun'):''),cls:'now'});
@@ -2238,12 +2259,14 @@ function onLeft(h,e){if(modalOpen())return;if(isEdit()){editLeft(h);return}
   if(!ctx.classList.contains('hidden')){closeMenu();return}
   if(UI.wait){if(!validTarget(UI.wait,h))return;const w=UI.wait;UI.wait=null;G.busy=true;hideTip();render();w.resolve(h);return}
   if(e&&lastPT!=='mouse'&&!(G.act&&UI.mode)){UI.hoverP=playerAt(h)||null;renderCard()}
+  // un solo clic: su un proprio calciatore attivabile apre subito il menu
+  if(G.phase==='att'&&!isAI(G.cur)&&!(G.act&&UI.mode)){const pl=playerAt(h);if(pl&&canOpen(pl)){UI.hoverP=pl;openMenuFor(pl);return}}
   if(G.phase!=='att'||isAI(G.cur))return;const a=G.act;if(!a)return;
   if(UI.mode==='pass'){if(validTarget({p:a.p,kind:'pass'},h))actSpacePass(a,h);return}
   if(UI.mode==='passNow'){if(validTarget({p:a.p,kind:'diretto',now:true},h))actPassNow(a,h);return}
   if(UI.mode==='dribble'){const o=dribbleTargets(a.p).find(x=>same(x,h));if(o)actDribble(a,o).then(ok=>{if(ok&&G.act===a)setTimeout(()=>openMenu(a.p),380)});return}
   if(UI.mode==='move'&&!a.moved){const o=a.opts.get(K(h));if(o){hideTip();doMove(a,o);render();if(G.over||G.act!==a)return;
-    if(!isHolder(a.p)&&!canTackle(a.p)){endActivation();return}
+    if(!isHolder(a.p)&&!canTackle(a.p)&&a.rem<1){endActivation();return}
     setTimeout(()=>{if(G.act===a&&!UI.mode)openMenu(a.p)},380)}}}
 const $=id=>document.getElementById(id);
 $('newBtn').onclick=()=>{if(TUT.on)startLesson(TUT.i);else if(G&&G.full)startMatch();else reset()};
