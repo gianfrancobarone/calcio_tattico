@@ -80,9 +80,12 @@ main{display:flex;gap:18px;padding:0 20px 18px;align-items:flex-start;flex-wrap:
 #toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:3;pointer-events:none}
 #toast div{background:rgba(10,15,12,.9);border:1px solid #3b5244;border-radius:999px;padding:6px 16px;font:700 16px 'Barlow Condensed';letter-spacing:.6px;text-transform:uppercase;animation:toast 1.8s ease forwards;white-space:nowrap}
 @keyframes toast{0%{opacity:0;transform:translateY(-6px)}12%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
-#result{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:6}
-#result .box{pointer-events:auto;background:rgba(10,15,12,.94);border:1px solid var(--acc);border-radius:16px;padding:20px 30px;text-align:center;max-width:80%;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:pop .2s ease}
-#result .box h2{font:800 40px 'Barlow Condensed';margin:0 0 4px;color:var(--acc);letter-spacing:1px;text-transform:uppercase}
+#result{position:absolute;left:0;right:0;bottom:54px;display:flex;justify-content:center;pointer-events:none;z-index:6;padding:0 10px}
+#result .box{pointer-events:auto;background:rgba(10,15,12,.94);border:1px solid var(--acc);border-radius:12px;padding:10px 18px;text-align:center;max-width:min(560px,100%);font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:pop .2s ease}
+#result .box h2{font:800 26px 'Barlow Condensed';margin:0 0 2px;color:var(--acc);letter-spacing:1px;text-transform:uppercase}
+#result .box .btns{margin-top:8px!important}
+#result .box .btns button{padding:6px 12px;font-size:13px}
+@media (max-width:640px){#result{bottom:46px;padding:0 6px}#result .box{width:100%;padding:8px 12px;font-size:13px}#result .box h2{font-size:20px}}
 aside{flex:0 1 340px;min-width:290px;display:flex;flex-direction:column;gap:12px}
 aside section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
 aside h3{font:700 13px 'Barlow Condensed';letter-spacing:1.2px;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
@@ -163,16 +166,19 @@ html{touch-action:manipulation}
   details#help{margin:0 6px 16px}
 }
 
+.sumtxt{font:12px/1.45 ui-monospace,Menlo,Consolas,monospace;background:#0c120e;border:1px solid #2c3d33;border-radius:8px;padding:10px;white-space:pre;overflow:auto;max-height:50vh;text-align:left}
+
 </style>
 </head>
 <body>
 <header>
-  <h1><span data-i18n="ui.title"></span> <small>v0.9</small></h1>
+  <h1><span data-i18n="ui.title"></span> <small>v0.9.6</small></h1>
   <div class="sp"></div>
   <select id="langSel" class="hidden" aria-label="Lingua"></select>
   <select id="scn" aria-label="Scenario"></select>
   <button class="tut" id="tutBtn" data-i18n="ui.tutorial"></button>
   <button class="ed" id="editBtn" data-i18n="ui.editor"></button>
+  <button class="ed" id="sumBtn" data-i18n="ui.summary"></button>
   <button class="pri" id="newBtn" data-i18n="ui.new"></button>
 </header>
 <main>
@@ -209,7 +215,7 @@ html{touch-action:manipulation}
   <aside>
     <section id="setup"><h3 data-i18n="setup.title"></h3>
       <label><span data-i18n="setup.type"></span><select id="gtype"><option value="azione" data-i18n="setup.type.azione"></option><option value="partita" data-i18n="setup.type.partita"></option></select></label>
-      <label><span data-i18n="setup.mode"></span><select id="mode"><option value="2g" data-i18n="setup.mode.2g"></option><option value="vsD" data-i18n="setup.mode.vsD"></option><option value="vsA" data-i18n="setup.mode.vsA"></option></select></label>
+      <label><span data-i18n="setup.mode"></span><select id="mode"><option value="vsD" data-i18n="setup.mode.vsD" selected></option><option value="2g" data-i18n="setup.mode.2g"></option><option value="vsA" data-i18n="setup.mode.vsA"></option></select></label>
       <label id="lbA"><span data-i18n="setup.aiA"></span><select id="stA"></select></label>
       <label id="lbD"><span data-i18n="setup.aiD"></span><select id="stD"></select></label>
       <div id="fullOpts" class="hidden">
@@ -244,6 +250,7 @@ const DICT={it:{
  'ui.tutorial':"Tutorial",
  'ui.editor':"Editor",
  'ui.new':"Nuova azione",
+ 'ui.summary':"Riepilogo",
  'ui.newMatch':"Nuova partita",
  'ui.wall':"Barriera",
  'ui.endTurn':"Fine turno",
@@ -447,6 +454,7 @@ const DICT={it:{
  'menu.tackle':"Contrasto",
  'menu.gkOut':"Uscita / contrasto",
  'menu.tackleH':"{a} dadi contro dribbling {b}",
+ 'menu.behindH':" · alle spalle: −2 dadi",
  'menu.rushH':" · in corsa: −1 dado, più falli se di lato",
  'menu.done':"Fatto ✓",
  'menu.stayStill':"Resta fermo",
@@ -486,7 +494,7 @@ const DICT={it:{
  'int.title':"{p}: che contrasto?",
  'int.rush':"Arrivi in corsa: un dado in meno e, se lo prendi di lato o da dietro, più rischio di fallo. ",
  'int.opt':"<b>{n}</b> · {d} dadi · fallo con {f} uni · giallo {y} · rosso {r}",
- 'int.behind':"<b>Da dietro</b>: soglie di fallo ridotte di 1. ",
+ 'int.behind':"<b>Alle spalle</b>: 2 dadi in meno e soglie di fallo ridotte di 1. ",
  'int.info':"Contrasto {c} contro Dribbling {d} di {p}. Più dadi tiri, più facilmente escono gli 1.",
  'car.committed':"Difensori usciti su di te (impegnati): <b>{l}</b>.",
  'car.nobody':"nessuno",
@@ -546,7 +554,7 @@ const DICT={it:{
  'dice.saveWrong':"{p} · Parata (lato sbagliato)",
  'dice.tactical':"Fallo tattico: cartellino?",
  'dice.tackle':"{p} · Contrasto {i}",
- 'dice.behind':" (da dietro)",
+ 'dice.behind':" (alle spalle: −2)",
  'dice.side':" (di lato)",
  'dice.rush':" (−1 in corsa)",
  'dice.closeRange':" (palla a ridosso: −1)",
@@ -716,6 +724,28 @@ const DICT={it:{
  'fk.pass':"⇉ <b>Passaggio corto</b> · diretto, a un compagno o nello spazio",
  'fk.other':"☰ Altre giocate (menu completo)",
  'hint.fkPass':"<b>{p}</b>: {LC} sul compagno o sul punto. I colori indicano la probabilità di riuscita.",
+ 'sum.title':"Riepilogo",
+ 'sum.hint':"Copia il testo e mandalo insieme ai tuoi commenti: ci aiuta a migliorare il gioco.",
+ 'sum.copy':"📋 Copia",
+ 'sum.close':"Chiudi",
+ 'sum.copied':"Riepilogo copiato",
+ 'sum.mode':"Modalità",
+ 'sum.result':"Esito",
+ 'sum.inProgress':"in corso",
+ 'sum.turns':"Turni",
+ 'sum.gameTime':"tempo di gioco",
+ 'sum.realTime':"tempo reale",
+ 'sum.passes':"Passaggi riusciti",
+ 'sum.launches':"Lanci riusciti",
+ 'sum.shots':"Tiri",
+ 'sum.goals':"Gol",
+ 'sum.tackles':"Contrasti vinti",
+ 'sum.dribbles':"Dribbling riusciti",
+ 'sum.fouls':"Falli",
+ 'sum.cards':"Cartellini",
+ 'sum.offside':"Fuorigioco",
+ 'sum.lost':"Palloni persi",
+ 'sum.acts':"Attivazioni",
  // Avvisi
  'toast.ballPhase':"Fase palla",
  'toast.turn':"Turno {n} · {who}",
@@ -857,8 +887,8 @@ const DICT={it:{
  'tut.7.3':"Il difensore vede la carica e ti esce addosso (bordo arancione: è <b>impegnato</b>). Chiudi il turno con <b>Fine turno blu</b>: nella fase palla scegli <b>Finta</b>. Se la tua Finta batte la sua Lettura resta sbilanciato. Poi gioca il tiro diretto o un passaggio.",
  'tut.7.end':"La finta funziona solo contro chi si è impegnato: un difensore che aspetta non abbocca.",
  'tut.8.t':"Palla ferma",
- 'tut.8.1':"Fallo al limite dell'area: <b>punizione</b>. Scegli <b>Piazzamento</b>: tu e il computer spostate un calciatore a testa, a turno, dove volete (i rossi a 9 m dalla palla, cerchio arancione). Quando hai finito premi <b>Pronto blu</b>.",
- 'tut.8.2':"Fischio! Batti: <b>carica il tiro</b> sopra la barriera oppure cerca un compagno in area. Il fuorigioco qui vale (non vale solo su angolo, rimessa laterale e rimessa dal fondo).",
+ 'tut.8.1':"Fallo al limite dell'area: <b>punizione</b>. Scegli <b>Piazzamento</b>: tu e il computer spostate un calciatore a testa, a turno (i rossi a 9 m dalla palla, cerchio arancione). Quando hai finito premi <b>Pronto blu</b>: da lì la tua disposizione è fissata e il computer completa la sua.",
+ 'tut.8.2':"Fischio! Nella finestra della <b>battuta</b> scegli: tiro potente, tiro a giro sopra la barriera, cross in area o passaggio. Tutto parte subito: a palla ferma nessuno si muove prima del calcio. Il fuorigioco qui vale (non vale solo su angolo, rimessa laterale e rimessa dal fondo).",
  'tut.8.end':"A palla ferma il tempo non conta: vince chi si posiziona meglio.",
  'tut.9.t':"Partita di allenamento",
  'tut.9.1':"Ora tutto insieme: 5 attaccanti contro un <b>blocco basso</b> di 5 più il portiere, guidato dal computer. Fai girare la palla, cerca il varco, evita il fuorigioco. <b>Obiettivo: segnare.</b>",
@@ -876,7 +906,7 @@ const DICT={it:{
  'help.9':"<b>Rigore</b>: il portiere sceglie in segreto il lato. Se indovina ha un dado in più, altrimenti uno solo. <b>Cartellini</b>: due gialli o un rosso = espulsione.",
  'help.10':"<b>Partita 11 contro 11</b>: campo intero, due tempi, risultato. Ogni turno puoi attivare un numero limitato di calciatori; gli altri si muovono da soli seguendo il modulo e la tattica (in fase palla). I blu attaccano verso l'alto, i rossi verso il basso, per tutta la partita.",
  'help.12':"<b>Dribbling</b>: con la palla, se hai un avversario adiacente davanti e lo spazio dietro di lui è libero, scegli Dribbling e clicca l'avversario: Dribbling contro Contrasto. Vale anche dopo una conduzione, se ti restano almeno 2 punti di movimento; se arrivi in corsa hai +1 dado (slancio). Se vinci salti nell'esagono oltre di lui, che resta sbilanciato, e puoi ancora passare o tirare.",
- 'help.13':"<b>Contrasto</b>: se sei adiacente al portatore e lo hai davanti, scegli Contrasto (anche subito dopo esserti mosso). Contrasto contro Dribbling, i 1 possono diventare fallo. Se arrivi in corsa hai −1 dado e, se lo prendi di lato o da dietro, rischi di più il fallo. Se perdi resti sbilanciato.",
+ 'help.13':"<b>Contrasto</b>: se sei adiacente al portatore e lo hai davanti, scegli Contrasto (anche subito dopo esserti mosso). Contrasto contro Dribbling, i 1 possono diventare fallo. Alle spalle del portatore hai −2 dadi e più rischio di fallo. Se arrivi in corsa hai −1 dado e, se lo prendi di lato o da dietro, rischi ancora di più il fallo. Se perdi resti sbilanciato.",
  'help.14':"<b>Tiro a giro</b>: da fuori area, tra 16 e 36 m, carica il tiro e scegli Tiro a giro. Mira solo agli angoli e scavalca i corpi sulla linea, tranne la barriera vicina (che salta). È meno potente: il portiere ben piazzato para più spesso e, se la precisione manca di poco, il pallone non rientra e va fuori.",
  'help.15':"<b>Ordini (11 contro 11)</b>: un giocatore che sposti a mano tiene la posizione che gli hai dato e scorre con la squadra seguendo la palla, finché la tua squadra ha il possesso. Quando l'avversario conquista palla l'ordine si cancella e il giocatore rientra nel suo ruolo, con i tempi della sua corsa (girarsi costa).",
  'help.11':"<b>Modalità</b>: il gioco è pensato per <b>due persone</b> sullo stesso schermo. L'<b>allenamento</b> mette il computer dall'altra parte per imparare e provare situazioni. Il <b>Tutorial</b> spiega le regole in nove lezioni."
@@ -1016,7 +1046,7 @@ function newGame(sc,opt={}){setField(!!opt.full);
   G={turn:1,phase:'att',cur:'A',passed:{A:false,D:false},actCount:0,actN:{A:0,D:0},carica:null,pending:null,over:false,result:null,busy:false,offList:null,noOffside:false,
      ball:{holder:null,pos:null,flight:null},players:[],act:null,lastTouch:'A',restart:null,pendingRestart:null,sp:null,quiet:false,
      full:!!opt.full,score:{A:0,D:0},match:opt.full?{half:1,len:opt.len||40,start:1,first:'A'}:null,maxAct:opt.full?(opt.maxAct||4):99,
-     ctrl:opt.ctrl||{A:'human',D:'human'},strat:opt.strat||mkStrat(),fast:!!opt.fast,events:[],scName:sc.name};
+     ctrl:opt.ctrl||{A:'human',D:'human'},strat:opt.strat||mkStrat(),fast:!!opt.fast,events:[],scName:sc.name,t0:Date.now()};
   const used={A:new Set(),D:new Set()};
   sc.players.forEach(x=>{let n=x.num;if(used[x.team].has(n)){n=2;while(used[x.team].has(n))n++}used[x.team].add(n);G.players.push(mkPlayer({...x,st:clone(x.st),num:n}))});
   if(sc.holder!=null&&G.players[sc.holder]&&G.players[sc.holder].team==='A')G.ball.holder=G.players[sc.holder].id;
@@ -1118,7 +1148,7 @@ function validTarget(tg,h){if(!inField(h)||same(h,tg.p))return false;
   return hd(tg.p,h)<=tRange(tg.kind,tg.p)}
 const INT={leggero:{mod:-1,f:4,y:99,r:99},medio:{mod:0,f:3,y:4,r:99},forte:{mod:2,f:2,y:3,r:4},tattico:{}};
 function chooseIntensity(def,att){const ang=angDiff(angTo(att,def),dirAng(att.f)),behind=ang>90;
-  const rush=!!(G.act&&G.act.p===def&&G.act.moved&&def.state==='corsa'),b=(behind?1:0)+(rush&&ang>30?1:0),rm=rush?1:0;
+  const rush=!!(G.act&&G.act.p===def&&G.act.moved&&def.state==='corsa'),b=(behind?1:0)+(rush&&ang>30?1:0),rm=(rush?1:0)+(behind?2:0);
   const th=v=>v>=99?'—':Math.max(1,v-b);
   const opt=k=>{const I=INT[k];return{k,t:tr('int.opt',{n:tr('int.'+k),d:Math.max(1,def.st.contrasto+I.mod-rm),f:th(I.f),y:th(I.y),r:th(I.r)})}};
   return choose(tr('int.title',{p:nm(def)}),`<div class="hint">${behind?tr('int.behind'):''}${rush?tr('int.rush'):''}${tr('int.info',{c:def.st.contrasto,d:att.st.dribbling,p:nm(att)})}</div>`,
@@ -1140,7 +1170,7 @@ async function ask(team,kind,data){
     case'freeKick':{const p=data.p,d=dG(p,p.team),o=[];
       if(!data.indirect){if(d<=18)o.push({k:'tiro',t:tr('fk.shot',{x:pct(bestShot(p,p,false,0).xg)})});
         if(canGiro(p))o.push({k:'giro',t:tr('fk.giro',{x:pct(bestShot(p,p,'giro',0,GIRO_Z.map(i=>ZONES[i])).xg)})})}
-      o.push({k:'lancio',t:tr('fk.cross')},{k:'diretto',t:tr('fk.pass')},{k:'altro',t:tr('fk.other')});
+      o.push({k:'lancio',t:tr('fk.cross')},{k:'diretto',t:tr('fk.pass')});
       return choose(tr('fk.title',{p:nm(p)}),`<div class="hint">${tr(data.indirect?'fk.infoIndirect':'fk.info',{m:d*2})}</div>`,o)}
     case'place':return humanPlace(team,data)}}
 
@@ -1168,7 +1198,7 @@ function moveOptions(a){const p=a.p,pts=ptsFor(a);a.pts=pts;const res=new Map();
     if(cost>lim||blockedPath(p,h))continue;
     res.set(K(h),{h,cost,nf,back,d,lim})}
   return res}
-function startAct(p){ev('select',{by:p.tpl});G.act={p,moved:false,used:false,rotFree:true,spent:0,rem:0};G.act.opts=moveOptions(G.act);UI.mode=null;return G.act}
+function startAct(p){ev('select',{by:p.tpl,team:p.team});G.act={p,moved:false,used:false,rotFree:true,spent:0,rem:0};G.act.opts=moveOptions(G.act);UI.mode=null;return G.act}
 const firstAction=a=>G.actCount===0&&!a.moved;
 const restrictedKick=a=>G.restart&&G.restart.kicker===a.p.id&&!a.moved?G.restart.type:null;
 function doMove(a,o){const p=a.p;const cp=G.carica?byId(G.carica.id):null;const before=cp?hd(p,cp):0;
@@ -1184,7 +1214,7 @@ function doMove(a,o){const p=a.p;const cp=G.carica?byId(G.carica.id):null;const 
 function rotate(a,s){const p=a.p;const cost=a.rotFree?0:1;
   if(!a.moved){if(cost>ptsFor(a).sc)return false;a.spent+=cost;if(cost>0)p.state='fermo';a.opts=moveOptions(a)}
   else{if(cost>a.rem)return false;a.rem-=cost;if(cost>0)p.state='fermo'}
-  a.rotFree=false;a.used=true;p.f=(p.f+s+6)%6;ev('rotate',{by:p.tpl});return true}
+  a.rotFree=false;a.used=true;p.f=(p.f+s+6)%6;ev('rotate',{by:p.tpl,team:p.team});return true}
 // Ordini: il giocatore mosso a mano tiene la posizione (come scarto dalla sua base) finché la sua squadra ha il possesso
 function autoPlan(team){const poss=possTeam()===team&&!!holderP()||(!holderP()&&possTeam()===team);
   return{poss,plan:poss?attackShape(team):defPlan(defS(team),team)}}
@@ -1211,7 +1241,7 @@ async function actPassNow(a,target){const p=a.p,rc=playerAt(target);UI.mode=null
   log(tr(rc?'log.passNow':'log.passNowSpace',{p:nm(p),q:rc?nm(rc):''})+(run?tr('log.onTheRun'):''));
   sub(tr(rc?'sub.passNow':'sub.passNowSpace',{p:nm(p),q:rc?nm(rc):''}),p.team);
   G.offList=offsideIds(p.team);await resolvePass(p,target,'diretto',0);G.offList=null;
-  ev('pass',{kind:'diretto',d:hd(p,target),out:stateOutcome(p.team),by:p.tpl});
+  ev('pass',{kind:'diretto',d:hd(p,target),out:stateOutcome(p.team),by:p.tpl,team:p.team});
   G.busy=false;if(await settle()!=='ok'){render();return}
   const h=holderP();if(h&&h.team===p.team&&h!==p&&!h.act){h.halfMove=true;log(tr('log.halfMove',{p:nm(h)}))}
   await endActivation()}
@@ -1223,16 +1253,16 @@ async function actCarica(a,type){G.carica={id:a.p.id,type};sub(tr(type==='tiro'?
 async function actDribble(a,o){const p=a.p;const beyond={q:2*o.q-p.q,r:2*o.r-p.r};let res;G.busy=true;UI.mode=null;render();
   if(isSb(o)){log(tr('log.dribbleFree',{p:nm(o)}));res='att'}
   else{const k=await ask(o.team,'intensity',{def:o,att:p});const bonus=a.moved&&p.state==='corsa'?1:0;res=await tackle(o,p,k,true,bonus)}
-  ev('dribble',{out:res,by:p.tpl});G.busy=false;
+  ev('dribble',{out:res,by:p.tpl,team:p.team});G.busy=false;
   if(res==='att'){p.q=beyond.q;p.r=beyond.r;p.f=dirTo(p,tgt(p.team));a.moved=a.used=true;a.rem=0;p.moved=true;log(tr('log.dribbleOk',{p:nm(p),o:nm(o)}));sub(tr('sub.dribbleOk',{p:nm(p),o:nm(o)}),p.team);render();return true}
   if(await settle()==='ok'&&!G.over)await endActivation();else render();return false}
 async function actTackle(a){const p=a.p,h=holderP();G.busy=true;render();const k=await ask(p.team,'intensity',{def:p,att:h});
-  const rush=!!(a.moved&&p.state==='corsa');const res=await tackle(p,h,k,false,0,rush);ev('tackle',{int:k,out:res,by:p.tpl,rush});G.busy=false;if(await settle()==='ok'&&!G.over)await endActivation();else render()}
+  const rush=!!(a.moved&&p.state==='corsa');const res=await tackle(p,h,k,false,0,rush);ev('tackle',{int:k,out:res,by:p.tpl,team:p.team,rush});G.busy=false;if(await settle()==='ok'&&!G.over)await endActivation();else render()}
 
 // ===================== Palla =====================
 function gainBall(q,why){
   if(G.offList&&G.offList.includes(q.id)){const pos={q:q.q,r:q.r};G.ball={holder:null,pos,flight:null};G.offList=null;G.subWhy=null;
-    log(tr('log.offside',{p:nm(q)}));sub(tr('sub.offside',{p:nm(q)}),q.team);ev('offside',{by:q.tpl});
+    log(tr('log.offside',{p:nm(q)}));sub(tr('sub.offside',{p:nm(q)}),q.team);ev('offside',{by:q.tpl,team:q.team});
     if(!G.full)return endAction(tr('res.offside'),tr('res.offsideMsg',{p:nm(q)}),'fuorigioco');
     return restartFor(other(q.team),'punizione',pos,{indirect:true})}
   const prevTeam=G.lastTouch;G.ball={holder:q.id,pos:null,flight:null};G.lastTouch=q.team;G.possT=q.team;log(tr('log.gain',{p:nm(q),w:why||tr('why.control')}));
@@ -1412,12 +1442,12 @@ function foul(def,att,card){let red=card==='rosso';
   const area=inAreaOf(att,def.team);restartFor(att.team,area?'rigore':'punizione',{q:att.q,r:att.r},{fouled:att.id});
   log(tr('log.foul',{d:nm(def),a:nm(att)})+(card?tr('log.card',{c:tr(red&&card!=='rosso'?'card.doubleYellow':'card.'+card)}):'')+': <b>'+tr(area?'rn.rigore':'rn.punizione').toLowerCase()+'</b>.');
   sub(tr('sub.foul',{d:nm(def),a:nm(att),r:tr(area?'rn.rigore':'rn.punizione').toLowerCase()})+(card?' · '+tr('sub.card',{c:tr(red&&card!=='rosso'?'card.doubleYellow':'card.'+card)}):''),att.team);
-  ev('foul',{by:def.tpl,card:red?'rosso':(card||''),area});
+  ev('foul',{by:def.tpl,team:def.team,card:red?'rosso':(card||''),area});
   if(red){log(tr('log.sentOff',{p:nm(def)}));G.players=G.players.filter(x=>x!==def);if(!FASTM())buildPlayers()}}
 async function tackle(def,att,k,isDribble,bonus=0,rush=false){
   const ang=angDiff(angTo(att,def),dirAng(att.f)),behind=ang>90,side=ang>30;
   // In corsa: -1 dado; se arrivi di lato o da dietro anche più rischio di fallo
-  const b=(behind?1:0)+(rush&&side?1:0),rm=rush?1:0;
+  const b=(behind?1:0)+(rush&&side?1:0),rm=(rush?1:0)+(behind?2:0);
   if(k==='tattico'){const v=rollD6(tr('dice.tactical'));foul(def,att,v>=4?'giallo':null);return'foul'}
   const I=INT[k]||INT.medio;const D=roll(Math.max(1,def.st.contrasto+I.mod-rm),tr('dice.tackle',{p:nm(def),i:tr('int.'+k).toLowerCase()})+(behind?tr('dice.behind'):side&&rush?tr('dice.side'):'')+(rush?tr('dice.rush'):''),null);
   const A=roll(att.st.dribbling+bonus,tr(isDribble?'dice.dribble':'dice.protect',{p:nm(att)})+(bonus?tr('dice.momentum'):''),null);
@@ -1468,7 +1498,7 @@ async function ballPhase(){const g=G;G.phase='palla';G.busy=true;G.act=null;UI.m
   if(G!==g)return;if(!G.over&&!G.pendingRestart&&G.carica)await caricaPhase();
   if(G!==g)return;if(!G.over&&!G.pendingRestart&&G.pending){const pe=G.pending,p=byId(pe.from);G.pending=null;
     if(p&&isHolder(p)){if(pe.type==='piatto')await resolveShot(p,pe.zone,0,true,'piatto');
-      else{G.offList=pe.off||null;const d=hd(p,pe.target);await resolvePass(p,pe.target,'pass',0);G.offList=null;ev('pass',{kind:'preciso',d,out:stateOutcome(p.team),by:p.tpl})}}}
+      else{G.offList=pe.off||null;const d=hd(p,pe.target);await resolvePass(p,pe.target,'pass',0);G.offList=null;ev('pass',{kind:'preciso',d,out:stateOutcome(p.team),by:p.tpl,team:p.team})}}}
   if(G!==g)return;G.busy=false;
   if(await settle()==='ok'&&G===g&&!G.over){endTurn();if(G.pendingRestart&&!G.over)await settle();else if(!G.over)toast(tr('toast.turn',{n:G.turn,who:teamLabel(G.cur).toLowerCase()}),G.cur)}
   render()}
@@ -1478,12 +1508,12 @@ async function caricaPhase(){const g=G;const p=byId(G.carica.id);const type=G.ca
   if(c==='giro'){const z=await ask(p.team,'zone',{p,giro:true});if(G!==g)return;return resolveShot(p,z,0,'giro','tiro a giro')}
   if(c==='go'){if(type==='tiro'){const z=await ask(p.team,'zone',{p,piatto:false});return resolveShot(p,z,0,false,'tiro caricato')}
     const h=await ask(p.team,'target',{p,kind:'lancio',extra:0,msg:tr('hint.launchTarget')});G.busy=true;
-    G.offList=offsideIds(p.team);const d=hd(p,h);await resolvePass(p,h,'lancio',0);G.offList=null;ev('pass',{kind:'lancio',d,out:stateOutcome(p.team),by:p.tpl});return}
+    G.offList=offsideIds(p.team);const d=hd(p,h);await resolvePass(p,h,'lancio',0);G.offList=null;ev('pass',{kind:'lancio',d,out:stateOutcome(p.team),by:p.tpl,team:p.team});return}
   await finta(p);
   const c2=await ask(p.team,'afterFinta',{p,piatto:dG(p,p.team)<=PIATTO_MAX});if(G!==g)return;
   if(c2==='piatto'){const z=await ask(p.team,'zone',{p,piatto:true,extra:1});return resolveShot(p,z,1,true,'piatto dopo finta')}
   if(c2==='pass'){const h=await ask(p.team,'target',{p,kind:'pass',extra:1,msg:tr('hint.fintaTarget')});G.busy=true;
-    G.offList=offsideIds(p.team);const d=hd(p,h);await resolvePass(p,h,'pass',1);G.offList=null;ev('pass',{kind:'dopo finta',d,out:stateOutcome(p.team),by:p.tpl});return}
+    G.offList=offsideIds(p.team);const d=hd(p,h);await resolvePass(p,h,'pass',1);G.offList=null;ev('pass',{kind:'dopo finta',d,out:stateOutcome(p.team),by:p.tpl,team:p.team});return}
   log(tr('log.keeps',{p:nm(p)}))}
 function resetTurnFlags(){for(const p of G.players){if(!p.moved)p.state='fermo';p.moved=false;p.act=false;p.committed=false;p.halfMove=false}
   G.passed={A:false,D:false};G.actCount=0;G.actN={A:0,D:0};G.carica=null;G.pending=null;G.offList=null}
@@ -1552,7 +1582,7 @@ async function freeKick(k,R){const g=G;if(!k||!isHolder(k)||G.over)return;const 
     await resolveShot(k,z,0,c==='giro'?'giro':false,c==='giro'?'punizione a giro':'punizione')}
   else{const kind=c==='lancio'?'lancio':'diretto';G.busy=false;
     const h=await ask(T,'target',{p:k,kind,extra:0,msg:tr(kind==='lancio'?'hint.launchTarget':'hint.fkPass',{p:nm(k)})});if(G!==g)return;G.busy=true;
-    G.offList=offsideIds(T);const d=hd(k,h);await resolvePass(k,h,kind,0);G.offList=null;ev('pass',{kind:kind==='lancio'?'lancio':'diretto',d,out:stateOutcome(T),by:k.tpl})}
+    G.offList=offsideIds(T);const d=hd(k,h);await resolvePass(k,h,kind,0);G.offList=null;ev('pass',{kind:kind==='lancio'?'lancio':'diretto',d,out:stateOutcome(T),by:k.tpl,team:k.team})}
   if(G!==g)return;G.busy=false;
   if(await settle()==='ok'&&!G.over&&G.act)await endActivation();else render()}
 async function placementLoop(R){const g=G;const ready={A:false,D:false},moves={A:0,D:0};let team=R.team;
@@ -1562,8 +1592,8 @@ async function placementLoop(R){const g=G;const ready={A:false,D:false},moves={A
     G.cur=team;render();
     const r=await ask(team,'place',{R});if(G!==g)return;
     if(r==='pronto'||moves[team]>=14){ready[team]=true;log(tr('log.ready',{team:tr('team.name'+team)}))}
-    else if(r&&r.wall){applyWall(R);moves[team]++;ready[other(team)]=false}
-    else if(r&&r.id){const p=byId(r.id);if(p&&validPlace(p,r.h,R)){p.q=r.h.q;p.r=r.h.r;p.f=p.team===R.team?dirTo(p,tgt(p.team)):dirTo(p,R.spot);moves[team]++;ready[other(team)]=false;log(tr('log.placed',{p:nm(p)}))}}
+    else if(r&&r.wall){applyWall(R);moves[team]++}
+    else if(r&&r.id){const p=byId(r.id);if(p&&validPlace(p,r.h,R)){p.q=r.h.q;p.r=r.h.r;p.f=p.team===R.team?dirTo(p,tgt(p.team)):dirTo(p,R.spot);moves[team]++;log(tr('log.placed',{p:nm(p)}))}}
     render();await wait(isAI(team)?160:0);team=other(team)}
   G.cur=R.team}
 async function penalty(k){const g=G,T=k.team,O=other(T);G.busy=true;const gk=gkOf(O);
@@ -1703,7 +1733,7 @@ function defPlan(S,team){const key=team+'|'+G.turn+'|'+G.actCount+'|'+(G.ball.ho
     if(best){const L=line(x,protect);res[best.d.id]=L[Math.min(outnum?2:1,L.length-1)];used.add(best.d.id)}}
   for(const d of ds)if(!used.has(d.id))res[d.id]=anchor(d,ball,S,true);
   G._dp={key,t:res};return res}
-function wantTackle(p,car,S){if(S.noTackle)return false;if(S.press)return true;return dG(car,car.team)<=16||pWinDuel(p.st.contrasto,car.st.dribbling)>=0.4}
+function wantTackle(p,car,S){if(S.noTackle)return false;if(S.press)return true;const bh=angDiff(angTo(car,p),dirAng(car.f))>90?2:0;return dG(car,car.team)<=16||pWinDuel(Math.max(1,p.st.contrasto-bh),car.st.dribbling)>=0.4}
 async function aiDefend(team,actors,S){const car=holderP();
   if(car){for(const p of actors)if(canTackle(p)&&wantTackle(p,car,S)){startAct(p);await actTackle(G.act);return}}
   const plan=defPlan(S,team),ball=ballHex()||kickSpot();
@@ -1740,9 +1770,12 @@ function aiDecide(team,kind,data){
       if(data.giro)return bestShot(data.p,data.p,'giro',0,GIRO_Z.map(i=>ZONES[i])).z;
       return bestShot(data.p,data.p,!!data.piatto,data.extra||0,data.piatto?[ZONES[3],ZONES[4],ZONES[5]]:ZONES).z}
     case'target':return aiBestTarget(data.p,data.kind,data.extra||0);
-    case'freeKick':{const p=data.p,S=attS(p.team);if(data.indirect)return'altro';const d=dG(p,p.team);
-      const xs=d<=18?bestShot(p,p,false,0).xg:0,xgi=canGiro(p)?bestShot(p,p,'giro',0,GIRO_Z.map(i=>ZONES[i])).xg:0;
-      if(Math.max(xs,xgi)>=S.shootMin*0.7)return xgi>xs?'giro':'tiro';return 'altro'}
+    case'freeKick':{const p=data.p,S=attS(p.team),d=dG(p,p.team);
+      if(!data.indirect){const xs=d<=18?bestShot(p,p,false,0).xg:0,xgi=canGiro(p)?bestShot(p,p,'giro',0,GIRO_Z.map(i=>ZONES[i])).xg:0;
+        if(Math.max(xs,xgi)>=S.shootMin*0.7)return xgi>xs?'giro':'tiro'}
+      // altrimenti: cross se c'è un compagno in area raggiungibile, se no passaggio al compagno migliore
+      const inBox=G.players.some(q=>q.team===p.team&&q!==p&&inAreaOf(q,other(p.team))&&hd(p,q)<=tRange('lancio',p));
+      return inBox&&d<=26?'lancio':'diretto'}
     case'afterFinta':{const p=data.p,S=attS(p.team);const xp=data.piatto?bestShot(p,p,true,1).xg:0;if(xp>=S.shootMin)return'piatto';
       return aiBestTarget(p,'pass',1)?'pass':'keep'}
     case'restartMode':return ['laterale','fondo'].includes(data.R.type)?'rapida':'piazza';
@@ -1871,6 +1904,7 @@ function saveScen(){const B=openModal(tr('ed.saveTitle'),`<div class="hint">${tr
     const sc=scenFromG(n);SAVED.push(sc);const ok=storeSaved(SAVED);closeModal();CUSTOM=sc;populateSelect('s'+(SAVED.length-1));
     toast(tr(ok?'ed.saved':'ed.notSaved'))};B.append(x,c);setTimeout(()=>{const i=document.getElementById('svName');if(i)i.focus()},50)}
 
+const MODEK='calcioTattico.modalita';const VERSION='v0.9.6';
 // ===================== Menu contestuale (partita) =====================
 const wrap=document.getElementById('svgWrap'),ctx=document.getElementById('ctx'),tip=document.getElementById('tip'),svg=document.getElementById('field'),mini=document.getElementById('mini');
 function toLocal(pt){const m=svg.getScreenCTM&&svg.getScreenCTM();if(!m)return{x:0,y:0};const P=svg.createSVGPoint();P.x=pt.x;P.y=pt.y;
@@ -1904,7 +1938,7 @@ function availableActions(a){const p=a.p,hold=isHolder(p),out=[];const rs=restri
     if(firstAction(a)&&rs!=='laterale'&&rs!=='inizio'){out.push({k:'cLancio',ic:'⤴',lb:tr(rs==='angolo'?'menu.cross':'menu.launch'),h:tr('menu.chargeH'),cls:'warn'});
       if(!rs||rs==='punizione')out.push({k:'cTiro',ic:'◎',lb:tr('menu.chargeShot'),h:tr('menu.chargeShotH',{m:dG(p,p.team)*2}),cls:'warn'})}
     if((!a.moved||a.rem>=2)&&!rs&&dribbleTargets(p).length){const mo=a.moved&&p.state==='corsa';out.push({k:'dribble',ic:'✦',lb:tr('menu.dribbling'),h:tr('menu.dribblingH',{n:p.st.dribbling+(mo?1:0)})+(mo?tr('menu.momentum'):'')})}}
-  if(canTackle(p)){const h=holderP();out.push({sep:1});const ru=a.moved&&p.state==='corsa';out.push({k:'tackle',ic:'⚔',lb:tr(p.gk?'menu.gkOut':'menu.tackle'),h:tr('menu.tackleH',{a:Math.max(1,p.st.contrasto-(ru?1:0)),b:h.st.dribbling})+(ru?tr('menu.rushH'):''),cls:'warn'})}
+  if(canTackle(p)){const h=holderP();out.push({sep:1});const ru=a.moved&&p.state==='corsa';const bh=angDiff(angTo(h,p),dirAng(h.f))>90;out.push({k:'tackle',ic:'⚔',lb:tr(p.gk?'menu.gkOut':'menu.tackle'),h:tr('menu.tackleH',{a:Math.max(1,p.st.contrasto-(ru?1:0)-(bh?2:0)),b:h.st.dribbling})+(ru?tr('menu.rushH'):'')+(bh?tr('menu.behindH'):''),cls:'warn'})}
   out.push({sep:1});out.push({k:'end',ic:'✓',lb:tr(!a.used?'menu.stayStill':hold?'menu.keep':'menu.done'),h:'',cls:'go'});
   if(!a.used)out.push({k:'cancel',ic:'✕',lb:tr('menu.cancel'),h:''});
   return out}
@@ -2029,10 +2063,13 @@ function ballTarget(){if(!G)return null;const h=holderP();
 function animBall(to,o={}){if(FASTM())return Promise.resolve();return new Promise(res=>{const from={...BALL.vis.cur};const dist=Math.hypot(to.x-from.x,to.y-from.y);
   const speed=o.fast?1.4:o.air?0.55:0.85;const dur=Math.max(180,Math.min(1600,dist/speed));
   BALL.anim={from,to,t0:performance.now(),dur,air:!!o.air,half:o.half||0,h0:BALL.vis.h,res};})}
-function tick(now){
-  if(G&&!G.fast){const drag=EDIT.drag&&EDIT.drag.id;
-    for(const p of G.players){const v=VIS[p.id];if(!v)continue;const c=px(p);const k=(isEdit()&&drag===p.id)?0.5:0.16;
-      v.x+=(c.x-v.x)*k;v.y+=(c.y-v.y)*k;
+// velocità delle pedine sullo schermo: 9 esagoni al secondo (l'ala lanciata percorre il suo turno in circa 1 s)
+const PSPEED=9;let TLAST=0;
+function tick(now){const dt=Math.min(100,TLAST?now-TLAST:16);TLAST=now;
+  if(G&&!G.fast){const drag=EDIT.drag&&EDIT.drag.id;const step=PSPEED*S*SQ3*dt/1000;
+    for(const p of G.players){const v=VIS[p.id];if(!v)continue;const c=px(p);
+      if(isEdit()&&drag===p.id){v.x+=(c.x-v.x)*0.5;v.y+=(c.y-v.y)*0.5}
+      else{const dx=c.x-v.x,dy=c.y-v.y,dd=Math.hypot(dx,dy);if(dd<=step||dd>S*SQ3*40){v.x=c.x;v.y=c.y}else{v.x+=dx/dd*step;v.y+=dy/dd*step}}
       const want=dirAng(p.f)+90;const d=(((want-v.a)%360)+540)%360-180;v.a+=d*0.2;
       v.g.setAttribute('transform',`translate(${v.x.toFixed(2)},${v.y.toFixed(2)})`);v.rot.setAttribute('transform',`rotate(${v.a.toFixed(1)})`);}
     const A=BALL.anim;
@@ -2072,10 +2109,15 @@ function renderField(){HL.innerHTML='';FX.innerHTML='';const a=G.act;const human
   const tm=targetMode();
   if(tm&&UI.hover&&validTarget(tm,UI.hover)){const L=line(tm.p,UI.hover);L.slice(1,-1).forEach(h=>inField(h)&&poly(HL,h,'rgba(143,208,255,.22)'));
     const A=px(tm.p),B=px(UI.hover);const I=passInfo(tm.p,UI.hover,tm.now?'diretto':tm.kind,tm.extra);
-    if(tm.kind==='lancio'){const mx=(A.x+B.x)/2,my=(A.y+B.y)/2-Math.hypot(B.x-A.x,B.y-A.y)*0.25;mk(HL,'path',{d:`M${A.x},${A.y} Q${mx},${my} ${B.x},${B.y}`,fill:'none',stroke:'var(--air)','stroke-width':2,'stroke-dasharray':'6 4'})}
-    else mk(HL,'line',{x1:A.x,y1:A.y,x2:B.x,y2:B.y,stroke:'var(--air)','stroke-width':2.2,'stroke-linecap':'round'});
-    mk(HL,'circle',{cx:B.x,cy:B.y,r:S*(0.55+I.mult*0.35),fill:'rgba(143,208,255,.12)',stroke:'var(--air)','stroke-dasharray':'3 3'});
+    // dima: traiettoria ben visibile sopra la mappa colorata, cerchio = dove finisce la palla con un successo mancante
+    const lp=tm.kind==='lancio'?(()=>{const mx=(A.x+B.x)/2,my=(A.y+B.y)/2-Math.hypot(B.x-A.x,B.y-A.y)*0.25;return `M${A.x},${A.y} Q${mx},${my} ${B.x},${B.y}`})():`M${A.x},${A.y} L${B.x},${B.y}`;
+    mk(HL,'path',{d:lp,fill:'none',stroke:'rgba(0,0,0,.55)','stroke-width':6,'stroke-linecap':'round'});
+    mk(HL,'path',{d:lp,fill:'none',stroke:'#e8f6ff','stroke-width':3,'stroke-linecap':'round','stroke-dasharray':tm.kind==='lancio'?'9 6':'none'});
+    const er=I.mult*S*SQ3;mk(HL,'circle',{cx:B.x,cy:B.y,r:er,fill:'rgba(255,255,255,.10)',stroke:'rgba(0,0,0,.5)','stroke-width':4});
+    mk(HL,'circle',{cx:B.x,cy:B.y,r:er,fill:'none',stroke:'#e8f6ff','stroke-width':2,'stroke-dasharray':'5 4'});
+    const tx=mk(HL,'text',{x:B.x+er+4,y:B.y-er*0.6,fill:'#fff','font-size':11,'font-weight':700,'paint-order':'stroke',stroke:'rgba(0,0,0,.7)','stroke-width':3});tx.textContent=`±${I.mult*2} m`;
     poly(HL,UI.hover,'rgba(143,208,255,.6)','#fff',1.4)}
+  if(HEAT)HEAT.style.opacity=(tm&&UI.hover&&validTarget(tm,UI.hover))?'.35':'1';
   if(G.phase==='ferma'&&G.sp){const sp=px(G.sp.spot);if(G.sp.minD>1)mk(FX,'circle',{cx:sp.x,cy:sp.y,r:G.sp.minD*S*SQ3*0.98,fill:'rgba(217,130,43,.06)',stroke:'#d9822b','stroke-dasharray':'5 4','stroke-width':1.4});
     if(UI.placeWait&&UI.placeSel){const p=byId(UI.placeSel);if(p)for(const h of FIELD)if(hd(h,p)<=14&&validPlace(p,h,G.sp))poly(HL,h,'rgba(217,130,43,.16)');
       if(p&&UI.hover&&validPlace(p,UI.hover,G.sp))poly(HL,UI.hover,'rgba(255,190,120,.6)','#fff',1.4)}}
@@ -2281,7 +2323,7 @@ $('edExit').onclick=exitEditor;
 $('camIn').onclick=()=>{CAM.follow=false;camZoom(1.4)};$('camOut').onclick=()=>{CAM.follow=false;camZoom(1/1.4)};
 $('camFit').onclick=()=>{CAM.follow=false;CAM.z=zMin();applyCam();renderCamBtns()};
 $('camFollow').onclick=()=>{CAM.follow=!CAM.follow;renderCamBtns()};
-$('mode').onchange=()=>{G.ctrl=ctrlFromMode();closeMenu();if(G.act&&isAI(G.act.p.team)&&!G.act.used)G.act=null;render()};
+$('mode').onchange=()=>{try{localStorage.setItem(MODEK,$('mode').value)}catch(e){}G.ctrl=ctrlFromMode();closeMenu();if(G.act&&isAI(G.act.p.team)&&!G.act.used)G.act=null;render()};
 $('stA').onchange=$('stD').onchange=()=>{G.strat=stratFromUI();G._dp=null;render()};
 $('gtype').onchange=()=>{if($('gtype').value==='partita')startMatch();else{TUT.on=false;reset(currentScen())}};
 $('startMatch').onclick=startMatch;
@@ -2292,6 +2334,33 @@ window.addEventListener('resize',()=>{sizeField();CAM.vb='';applyCam()});
 document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
 document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});
 $('subs').onclick=()=>{const l=$('log');if(l)l.closest('section').scrollIntoView({behavior:'smooth',block:'center'})};
+// Riepilogo della partita/azione da copiare (per i tester)
+function summaryText(){const E=G.events,T=['A','D'],nmT=t=>teamWord(t);
+  const cnt=(f)=>T.map(t=>E.filter(e=>e.team===t&&f(e)).length);
+  const row=(lb,a,b)=>lb.padEnd(26)+String(a[0]+(b?'/'+b[0]:'')).padStart(8)+String(a[1]+(b?'/'+b[1]:'')).padStart(10);
+  const pas=cnt(e=>e.type==='pass'&&e.kind!=='lancio'),pok=cnt(e=>e.type==='pass'&&e.kind!=='lancio'&&e.out==='ok');
+  const lan=cnt(e=>e.type==='pass'&&e.kind==='lancio'),lok=cnt(e=>e.type==='pass'&&e.kind==='lancio'&&e.out==='ok');
+  const sh=cnt(e=>e.type==='shot'),gl=T.map(t=>E.filter(e=>e.type==='goal'&&e.team===t).length);
+  const tk=cnt(e=>e.type==='tackle'),tkw=cnt(e=>e.type==='tackle'&&e.out==='def');
+  const dr=cnt(e=>e.type==='dribble'),drw=cnt(e=>e.type==='dribble'&&e.out==='att');
+  const fo=cnt(e=>e.type==='foul'),ca=cnt(e=>e.type==='foul'&&e.card),off=cnt(e=>e.type==='offside');
+  const lost=T.map(t=>E.filter(e=>e.type==='turnover'&&e.team!==t).length),act=cnt(e=>e.type==='select');
+  const mode={'vsD':tr('setup.mode.vsD'),'vsA':tr('setup.mode.vsA'),'2g':tr('setup.mode.2g')}[$('mode').value]||'';
+  const real=Math.round((Date.now()-(G.t0||Date.now()))/60000);
+  return [`Calcio Tattico ${VERSION} · ${G.scName||''}`,`${tr('sum.mode')}: ${mode}`,
+    `${tr('sum.result')}: ${G.over&&G.result?G.result.title.replace(/<[^>]+>/g,''):tr('sum.inProgress')}`,
+    `${tr('sum.turns')}: ${G.turn} · ${tr('sum.gameTime')}: ${clock()} · ${tr('sum.realTime')}: ${real} min`,'',
+    ''.padEnd(26)+nmT('A').padStart(8)+nmT('D').padStart(10),
+    row(tr('sum.passes'),pok,pas),row(tr('sum.launches'),lok,lan),row(tr('sum.shots'),sh),row(tr('sum.goals'),gl),
+    row(tr('sum.tackles'),tkw,tk),row(tr('sum.dribbles'),drw,dr),row(tr('sum.fouls'),fo),row(tr('sum.cards'),ca),row(tr('sum.offside'),off),
+    row(tr('sum.lost'),lost),row(tr('sum.acts'),act)].join('\n')}
+function openSummary(){const txt=summaryText();const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  choose(tr('sum.title'),`<div class="hint">${tr('sum.hint')}</div><pre class="sumtxt">${esc(txt)}</pre>`,[{k:'copy',t:tr('sum.copy')},{k:'close',t:tr('sum.close')}]).then(k=>{
+    if(k!=='copy')return;const ok=()=>toast(tr('sum.copied'));
+    try{navigator.clipboard.writeText(txt).then(ok,()=>{fallbackCopy(txt);ok()})}catch(e){fallbackCopy(txt);ok()}})}
+function fallbackCopy(t){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove()}
+$('sumBtn').onclick=openSummary;
+try{const m=localStorage.getItem(MODEK);if(m&&[...$('mode').options].some(o=>o.value===m))$('mode').value=m}catch(e){}
 applyI18n();$('stD').value='possesso|zona';reset();requestAnimationFrame(tick);
 
 </script>
