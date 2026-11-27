@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Calcio Tattico — Prototipo v0.9</title>
+<title>Calcio Tattico — Versione 1.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -168,11 +168,16 @@ html{touch-action:manipulation}
 
 .sumtxt{font:12px/1.45 ui-monospace,Menlo,Consolas,monospace;background:#0c120e;border:1px solid #2c3d33;border-radius:8px;padding:10px;white-space:pre;overflow:auto;max-height:50vh;text-align:left}
 
+.pbar{height:9px;border-radius:5px;background:#3a2626;position:relative;overflow:hidden;margin:5px 0 3px}
+.pfill{position:absolute;left:0;top:0;bottom:0;background:#2f9a5a}
+.pmark{position:absolute;top:-2px;bottom:-2px;width:3px;margin-left:-1.5px;background:#fff;box-shadow:0 0 3px #000}
+.ptxt{font-size:11.5px;opacity:.75}
+
 </style>
 </head>
 <body>
 <header>
-  <h1><span data-i18n="ui.title"></span> <small>v0.9.6</small></h1>
+  <h1><span data-i18n="ui.title"></span> <small>v1.0</small></h1>
   <div class="sp"></div>
   <select id="langSel" class="hidden" aria-label="Lingua"></select>
   <select id="scn" aria-label="Scenario"></select>
@@ -256,7 +261,7 @@ const DICT={it:{
  'ui.endTurn':"Fine turno",
  'ui.endTurnTeam':"Fine turno {team}",
  'ui.ready':"Pronto {team}",
- 'ui.diceTitle':"Dadi · d6 · successo con 4-6 · gli 1 in rosso",
+ 'ui.diceTitle':"Tiri · d100 · riesce se esce un numero ≤ della probabilità",
  'ui.logTitle':"Cronaca",
  'ui.offsideLine':"linea del fuorigioco",
  'ui.close':"Chiudi",
@@ -451,11 +456,13 @@ const DICT={it:{
  'menu.chargeShotH':"da {m} m · finta possibile",
  'menu.dribbling':"Dribbling",
  'menu.dribblingH':"Dribbling {n} dadi",
+ 'menu.dribblingH2':"riesce fino al {p} (contro contrasto medio)",
  'menu.tackle':"Contrasto",
  'menu.gkOut':"Uscita / contrasto",
  'menu.tackleH':"{a} dadi contro dribbling {b}",
- 'menu.behindH':" · alle spalle: −2 dadi",
- 'menu.rushH':" · in corsa: −1 dado, più falli se di lato",
+ 'menu.tackleH2':"palla tua nel {w} (contrasto medio)",
+ 'menu.behindH':" · alle spalle: molto più difficile",
+ 'menu.rushH':" · in corsa: più difficile, più falli se di lato",
  'menu.done':"Fatto ✓",
  'menu.stayStill':"Resta fermo",
  'menu.keep':"Tieni palla ✓",
@@ -471,7 +478,11 @@ const DICT={it:{
  'tip.pressed':" · pressato +1",
  'tip.outArc':" · fuori dall'arco +1",
  'tip.finta':" · finta +1",
- 'tip.precise':"Preciso: <b>{p}</b> · errore ×{m} m",
+ 'tip.precise':"Preciso: <b>{p}</b> · errore ±{m} m",
+ 'tip.clear':"Supera gli avversari: <b>{c}</b>",
+ 'tip.dribble':"Dribbling su {o}",
+ 'tip.dribbleOdds':"Lo salti: contro leggero <b>{l}</b> · medio <b>{m}</b> · forte <b>{f}</b> (fallo a tuo favore compreso)",
+ 'tip.dribbleFree':"È sbilanciato: lo salti sicuro",
  'tip.nextTurn':"Atterra al turno successivo",
  'tip.offside':"⚑ Compagno in fuorigioco!",
  'tip.cost':"costo {c}/{l}",
@@ -483,18 +494,22 @@ const DICT={it:{
  'zone.AS':"Alto sinistra",'zone.AC':"Alto centro",'zone.AD':"Alto destra",'zone.BS':"Basso sinistra",'zone.BC':"Basso centro",'zone.BD':"Basso destra",
  'zone.title':"Dove tiri?",
  'zone.titlePiatto':"Tiro diretto: dove?",
- 'zone.prob':"precisione {p}",
+ 'zone.prob':"in porta {p}",
+ 'zone.goal':"gol {g}",
  'zone.titlePen':"Rigore: dove calci?",
- 'zone.info':"Da {m} m · precisione {n} dadi. Zone basse: difficoltà {lo} ({plo}).",
- 'zone.infoPen':"Dal dischetto · precisione {n} dadi. Zone basse: difficoltà {lo} ({plo}).",
+ 'zone.info':"Da {m} m. Ogni zona mostra la probabilità di andare in porta e quella di segnare. Zone basse: in porta nel {plo}.",
+ 'zone.infoPen':"Dal dischetto. Zone basse: in porta nel {plo}.",
  'zone.infoHigh':" Zone alte: {hi} ({phi}), con il rischio di tirare sopra la traversa.",
- 'zone.infoPiatto':" Il tiro diretto (di prima, in corsa o di testa) resta basso e la potenza è di {pot} dadi.",
+ 'zone.infoPiatto':" Il tiro diretto (di prima, in corsa o di testa) resta basso ed è meno potente.",
  'zone.infoV':" Il +N indica quanto la zona complica la parata.",
- 'int.leggero':"Leggero",'int.medio':"Medio",'int.forte':"Forte",'int.tattico':"<b>Fallo tattico</b> · sempre fallo, giallo con d6 4+",
+ 'int.leggero':"Leggero",'int.medio':"Medio",'int.forte':"Forte",'int.tattico':"<b>Fallo tattico</b> · sempre fallo, giallo nel 50%",
  'int.title':"{p}: che contrasto?",
- 'int.rush':"Arrivi in corsa: un dado in meno e, se lo prendi di lato o da dietro, più rischio di fallo. ",
+ 'int.rush':"Arrivi in corsa: vinci meno spesso e, se lo prendi di lato o da dietro, rischi di più il fallo. ",
+ 'int.opt2':"<b>{n}</b> · vinci {w} · pari {t} · saltato {l} · fallo {f}",
+ 'int.cards':" (cartellino {c})",
+ 'int.info2':"Probabilità di ogni esito contro {p}. Più forte entri, più vinci ma più rischi il fallo. Pari: palla contesa.",
  'int.opt':"<b>{n}</b> · {d} dadi · fallo con {f} uni · giallo {y} · rosso {r}",
- 'int.behind':"<b>Alle spalle</b>: 2 dadi in meno e soglie di fallo ridotte di 1. ",
+ 'int.behind':"<b>Alle spalle</b>: vinci molto meno spesso e rischi di più il fallo. ",
  'int.info':"Contrasto {c} contro Dribbling {d} di {p}. Più dadi tiri, più facilmente escono gli 1.",
  'car.committed':"Difensori usciti su di te (impegnati): <b>{l}</b>.",
  'car.nobody':"nessuno",
@@ -513,7 +528,7 @@ const DICT={it:{
  'rm.quick':"⚡ <b>Battuta rapida</b>",
  'rm.place':"✥ <b>Piazzamento</b>, poi il fischio dell'arbitro",
  'pen.gkTitle':"Portiere: dove ti tuffi?",
- 'pen.gkInfo':"Scegli prima che il tiratore decida (chi tira non guardi!). I lati sono visti dal tiratore. Se indovini il lato hai un dado in più, altrimenti ne hai uno solo.",
+ 'pen.gkInfo':"Scegli prima che il tiratore decida (chi tira non guardi!). I lati sono visti dal tiratore. Se indovini il lato pari molto più spesso, altrimenti quasi mai.",
  'pen.left':"⟵ Lato sinistro",
  'pen.center':"• Resto al centro",
  'pen.right':"⟶ Lato destro",
@@ -526,6 +541,16 @@ const DICT={it:{
  'rn.fondo':"Rimessa dal fondo",
  'rn.inizio':"Calcio d'inizio",
  // Etichette dei dadi
+ 'dice.chance':"riesce con ≤ {p} su 100",
+ 'dice.margin':" · +{n}",
+ 'dice.marginKo':" · manca di {n}",
+ 'dice.duel':"{d} contro {a} ({i})",
+ 'dice.fintaVs':"Finta di {p} contro la lettura di {q}",
+ 'duel.def':"palla al difensore",
+ 'duel.tie':"palla contesa",
+ 'duel.att':"resiste / salta",
+ 'duel.foul':"fallo",
+ 'duel.line':"difensore {d} · contesa {t} · attaccante {a} · fallo {f}",
  'dice.succ':"{n} successi",
  'dice.reflex':"{p} · Riflesso sulla deviazione",
  'dice.stopLoose':"{p} · Stop (palla vagante)",
@@ -554,7 +579,7 @@ const DICT={it:{
  'dice.saveWrong':"{p} · Parata (lato sbagliato)",
  'dice.tactical':"Fallo tattico: cartellino?",
  'dice.tackle':"{p} · Contrasto {i}",
- 'dice.behind':" (alle spalle: −2)",
+ 'dice.behind':" (alle spalle)",
  'dice.side':" (di lato)",
  'dice.rush':" (−1 in corsa)",
  'dice.closeRange':" (palla a ridosso: −1)",
@@ -700,7 +725,7 @@ const DICT={it:{
  'sub.restart':"{r} per i {team}",
  'sub.giro':"{p} calcia a giro...",
  'zone.titleGiro':"Tiro a giro: scegli l'angolo",
- 'zone.infoGiro':" A giro la palla aggira i corpi sulla linea (conta solo la barriera vicina). Dadi di potenza: {pot}. Più difficile da parare se angolata, ma con un dado di troppo poco va fuori più facilmente.",
+ 'zone.infoGiro':" A giro la palla aggira i corpi sulla linea (conta solo la barriera vicina). È meno potente ma più difficile da parare se angolata; se manca la precisione va fuori più facilmente.",
  'log.shotGiro':"{p} calcia a giro verso {z} da {m} m.",
  'dice.precGiro':"{p} · Precisione a giro",
  'dice.powGiro':"{p} · Potenza a giro",
@@ -874,7 +899,7 @@ const DICT={it:{
  'tut.4.2':"Gioca un <b>Passaggio preciso</b> verso l'<b>esagono segnato</b>, oltre la linea, e <b>solo dopo</b> muovi la <b>9</b> verso il pallone. Il fuorigioco si valuta quando dichiari il passaggio, non quando la palla arriva.",
  'tut.4.end':"Se la 9 fosse partita prima del passaggio sarebbe stata in fuorigioco: è il tempo giusto dell'attacco alla profondità.",
  'tut.5.t':"Difendere",
- 'tut.5.1':"Ora giochi il <b>rosso</b> e il computer attacca. Si contrasta solo un avversario <b>davanti a te</b> (nel tuo cono) e adiacente. Puoi scegliere l'intensità: più forte vuol dire più dadi, ma ogni <b>1</b> uscito avvicina il fallo. Da dietro si fa fallo più facilmente.",
+ 'tut.5.1':"Ora giochi il <b>rosso</b> e il computer attacca. Si contrasta solo un avversario <b>davanti a te</b> (nel tuo cono) e adiacente. Puoi scegliere l'intensità: la finestra mostra per ognuna la probabilità di vincere, di pareggiare, di essere saltato e di fare fallo. Da dietro si fa fallo più facilmente.",
  'tut.5.2':"<b>Recupera il pallone</b>: chiudi le linee di passaggio, avvicinati al portatore tenendolo davanti e usa <b>Contrasto</b> dal menu. Attenzione ai falli in area: sono rigore.",
  'tut.5.end':"In difesa conta la posizione prima del contrasto: chi arriva frontale vince più duelli e fa meno falli.",
  'tut.6.t':"Tirare",
@@ -898,22 +923,22 @@ const DICT={it:{
  'help.1':"<b>Comandi</b>: <b>clic</b> (o tocco) su un tuo calciatore non grigio apre il menu; lo stesso clic sceglie destinazioni e bersagli, <b>Esc</b> annulla. <b>Fine turno</b>: la tua squadra smette di muovere, l'altra può continuare. Rotellina o pizzico per lo zoom, trascina per spostare la vista.",
  'help.2':"<b>Velocità e orientamento</b>: Scatto da fermo, Corsa se nel turno prima hai percorso almeno 6 m (o tutto lo scatto). In corsa: dritto a piena velocità, una sterzata di 60° toglie un quarto della velocità, una di 120° ti riporta allo scatto e ti fa perdere la corsa, indietro non si può (al massimo resti fermo e freni). Da fermo puoi andare in ogni direzione e arretrare fino a 4 m. A fine movimento il calciatore guarda dove stava correndo; se gli restano punti puoi girarlo (1 punto ogni 60°, e in corsa perde la corsa). Prima di muoverlo la prima rotazione è gratis.",
  'help.3':"<b>Passaggio diretto</b>: parte subito, anche dopo aver condotto, verso un compagno o uno spazio. La portata va da 20 a 40 m secondo la tecnica; la difficoltà sale ogni 12 m. Chi riceve ha mezzo movimento. <b>Passaggio preciso</b>: solo se il giocatore non si è mosso; fino a 40 m, parte nella fase palla ed è più preciso. Gli esagoni colorati mostrano la probabilità di riuscita.",
- 'help.4':"<b>Intercetti</b>: per ogni avversario vicino alla traiettoria si tirano 2d6. Se la palla passa a 2 m nell'esagono davanti a lui: 8+ (42%), o 7+ (58%) se è bravo nell'intercetto. Negli esagoni davanti a lato: 9+ (28%) o 8+ (42%). Dietro di lui: non può intercettare. Se la palla passa a ridosso di chi calcia, serve 1 in più. Chi è sulla traiettoria la tocca con 6+ (72%) o 5+ (83%), altrimenti è tunnel. Se la tocca, la controlla con 2 successi di Stop (un dado in meno se il passaggio è lungo; sulla traiettoria solo se è girato verso la palla), altrimenti la devia. Gli esagoni colorati tengono già conto di questo rischio.",
+ 'help.4':"<b>Intercetti</b>: chi è a 2 m dalla traiettoria e la vede davanti la tocca nel 42% dei casi (58% se è bravo nell'intercetto); di lato 28% (42%); se è girato non può. Se la palla gli passa a ridosso di chi calcia, meno. Chi è sulla traiettoria la tocca nel 72% (83%), altrimenti è tunnel. Se la tocca la controlla (secondo lo Stop) o la devia. Gli esagoni colorati tengono già conto di questo rischio.",
  'help.5':"<b>Respinte</b>: direzione casuale; distanza d3 esagoni per il passaggio corto, d6 per passaggio lungo, tiro diretto e lancio, d6 + successi di potenza per il tiro. Se la palla esce dopo un tocco della difesa è angolo o rimessa per l'attacco.",
  'help.6':"<b>Carica</b> lancio o tiro: prima attivazione del turno, visibile a tutti; nella fase palla si esegue o si finta.",
  'help.7':"<b>Tiro</b>: la linea va verso la zona scelta. Tiri bassi: chiude anche chi è adiacente; ogni corpo sulla linea copre la visuale al portiere. Tiri alti: chiude solo chi è entro 4 m dal tiratore, +1 alla difficoltà, rischio di tirare sopra la traversa. Portiere lontano dalla linea o già superato = porta vuota; da vicino la parata è più difficile (+3 entro 6 m, +2 entro 10 m, +1 entro 12 m).",
  'help.8':"<b>Palla ferma</b> (punizione, rigore, angolo, rimesse, calcio d'inizio): chi batte sceglie battuta rapida o piazzamento libero a turni alternati, con le distanze rispettate e la barriera automatica. Niente fuorigioco su angolo, rimessa laterale e rimessa dal fondo.",
- 'help.9':"<b>Rigore</b>: il portiere sceglie in segreto il lato. Se indovina ha un dado in più, altrimenti uno solo. <b>Cartellini</b>: due gialli o un rosso = espulsione.",
+ 'help.9':"<b>Rigore</b>: il portiere sceglie in segreto il lato. Se indovina para molto più spesso, altrimenti quasi mai. <b>Cartellini</b>: due gialli o un rosso = espulsione.",
  'help.10':"<b>Partita 11 contro 11</b>: campo intero, due tempi, risultato. Ogni turno puoi attivare un numero limitato di calciatori; gli altri si muovono da soli seguendo il modulo e la tattica (in fase palla). I blu attaccano verso l'alto, i rossi verso il basso, per tutta la partita.",
- 'help.12':"<b>Dribbling</b>: con la palla, se hai un avversario adiacente davanti e lo spazio dietro di lui è libero, scegli Dribbling e clicca l'avversario: Dribbling contro Contrasto. Vale anche dopo una conduzione, se ti restano almeno 2 punti di movimento; se arrivi in corsa hai +1 dado (slancio). Se vinci salti nell'esagono oltre di lui, che resta sbilanciato, e puoi ancora passare o tirare.",
- 'help.13':"<b>Contrasto</b>: se sei adiacente al portatore e lo hai davanti, scegli Contrasto (anche subito dopo esserti mosso). Contrasto contro Dribbling, i 1 possono diventare fallo. Alle spalle del portatore hai −2 dadi e più rischio di fallo. Se arrivi in corsa hai −1 dado e, se lo prendi di lato o da dietro, rischi ancora di più il fallo. Se perdi resti sbilanciato.",
+ 'help.12':"<b>Dribbling</b>: con la palla, se hai un avversario adiacente davanti e lo spazio dietro di lui è libero, scegli Dribbling e passa sopra l'avversario per vedere quante volte lo salti contro un contrasto leggero, medio o forte. Vale anche dopo una conduzione, se ti restano almeno 2 punti di movimento; se arrivi in corsa hai lo slancio (più probabilità). Se vinci salti nell'esagono oltre di lui, che resta sbilanciato, e puoi ancora passare o tirare.",
+ 'help.13':"<b>Contrasto</b>: se sei adiacente al portatore e lo hai davanti, scegli Contrasto (anche subito dopo esserti mosso). La finestra mostra per ogni intensità quante volte vinci, pareggi (palla contesa), vieni saltato o fai fallo. Alle spalle del portatore vinci molto meno e rischi di più il fallo; in corsa vinci meno e, di lato o da dietro, rischi ancora di più. Se perdi resti sbilanciato.",
  'help.14':"<b>Tiro a giro</b>: da fuori area, tra 16 e 36 m, carica il tiro e scegli Tiro a giro. Mira solo agli angoli e scavalca i corpi sulla linea, tranne la barriera vicina (che salta). È meno potente: il portiere ben piazzato para più spesso e, se la precisione manca di poco, il pallone non rientra e va fuori.",
  'help.15':"<b>Ordini (11 contro 11)</b>: un giocatore che sposti a mano tiene la posizione che gli hai dato e scorre con la squadra seguendo la palla, finché la tua squadra ha il possesso. Quando l'avversario conquista palla l'ordine si cancella e il giocatore rientra nel suo ruolo, con i tempi della sua corsa (girarsi costa).",
  'help.11':"<b>Modalità</b>: il gioco è pensato per <b>due persone</b> sullo stesso schermo. L'<b>allenamento</b> mette il computer dall'altra parte per imparare e provare situazioni. Il <b>Tutorial</b> spiega le regole in nove lezioni."
 }};
 let LANG='it';try{const l=localStorage.getItem(LANGK);if(l&&DICT[l])LANG=l}catch(e){}
 function tr(k,v){let s=DICT[LANG]&&DICT[LANG][k];if(s==null)s=DICT.it[k];if(s==null)return k;
-  if(v)s=s.replace(/\{(\w+)\}/g,(m,x)=>v[x]!=null?v[x]:m);return s}
+  if(v)s=s.replace(/\{(\w+)\}/g,(m,x)=>{const y=v[x];if(y==null)return m;return typeof y==='number'&&!Number.isInteger(y)?(Math.round(y*10)/10).toLocaleString(LANG):y});return s}
 
 // ===================== Geometria esagonale (flat-top, coordinate assiali) =====================
 const S=12, SQ3=Math.sqrt(3), W=39, MX=S+8, MY=S*SQ3/2+38, KM=S*SQ3/2;
@@ -968,13 +993,32 @@ setField(false);
 // ===================== Dadi =====================
 const FASTM=()=>G&&G.fast;
 function d6(){const a=new Uint8Array(1);do{crypto.getRandomValues(a)}while(a[0]>=252);return a[0]%6+1}
-function roll(n,label,diff){n=Math.max(1,n);const dice=[];for(let i=0;i<n;i++)dice.push(d6());
-  const succ=dice.filter(x=>x>=4).length,ones=dice.filter(x=>x===1).length;if(!FASTM())showDice(label,dice,diff,succ);return{dice,succ,ones}}
+// ===================== Motore a probabilità (v1) =====================
+// Le probabilità sono quelle dei vecchi dadi (d6, successo con 4+), rese continue:
+// riserva e difficoltà possono essere numeri non interi e si interpola tra i valori interi vicini.
+// Ogni controllo si risolve con UN solo tiro d100 (1-100): riesce se esce un numero basso (≤ soglia).
+function d100(){const a=new Uint16Array(1);do{crypto.getRandomValues(a)}while(a[0]>=65500);return a[0]%100+1}
+// probabilità di ottenere almeno k successi con n "dadi" (n e k anche non interi)
+function pGE(n,k){n=Math.max(1,n);const n0=Math.floor(n),wn=n-n0,k0=Math.floor(k),wk=k-k0;
+  const P=(nn,kk)=>pAtLeastI(nn,kk);
+  const a=(1-wk)*P(n0,k0)+wk*P(n0,k0+1);if(!wn)return a;const b=(1-wk)*P(n0+1,k0)+wk*P(n0+1,k0+1);return (1-wn)*a+wn*b}
+// Controllo con soglia: restituisce il margine m (successi in più o in meno rispetto alla difficoltà).
+// Senza soglia (diff null): restituisce il numero di successi.
+function roll(n,label,diff){n=Math.max(1,n);const u=d100(),x=(u-0.5)/100;
+  if(diff==null){let k=0;for(let j=Math.ceil(n);j>=1;j--){if(x<pGE(n,j)){k=j;break}}
+    if(!FASTM())showRoll(label,u,null,k);return{succ:k,u}}
+  let m=-Math.ceil(diff)-1;for(let j=Math.ceil(n)+1;j>=-Math.ceil(diff)-1;j--){if(x<pGE(n,diff+j)){m=j;break}}
+  const p=pGE(n,diff);if(!FASTM())showRoll(label,u,p,null,m);return{succ:diff+m,m,u,p}}
+// Evento semplice con probabilità p (riesce se esce ≤ p)
+function chance(p,label){const u=d100(),ok=u<=Math.round(p*100);if(!FASTM()&&label)showRoll(label,u,p,null,ok?0:-1);return ok}
 function rollD6(label){const v=d6();if(!FASTM())showDice(label,[v],null,null,true);return v}
 function binom(n,k){let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return r}
-function pAtLeast(n,k){n=Math.max(1,n);if(k<=0)return 1;if(k>n)return 0;let s=0;for(let i=k;i<=n;i++)s+=binom(n,i);return s/Math.pow(2,n)}
-function pExact(n,k){n=Math.max(1,n);if(k<0||k>n)return 0;return binom(n,k)/Math.pow(2,n)}
-function pWinDuel(a,d){a=Math.max(1,a);d=Math.max(1,d);let s=0;for(let i=0;i<=a;i++){let below=0;for(let j=0;j<i&&j<=d;j++)below+=pExact(d,j);s+=pExact(a,i)*below}return s}
+function pAtLeastI(n,k){n=Math.max(1,n);if(k<=0)return 1;if(k>n)return 0;let s=0;for(let i=k;i<=n;i++)s+=binom(n,i);return s/Math.pow(2,n)}
+function pAtLeast(n,k){return pGE(n,k)}
+function pExactI(n,k){n=Math.max(1,n);if(k<0||k>n)return 0;return binom(n,k)/Math.pow(2,n)}
+function pExact(n,k){n=Math.max(1,n);const n0=Math.floor(n),w=n-n0;return w?(1-w)*pExactI(n0,k)+w*pExactI(n0+1,k):pExactI(n0,k)}
+function pWinDuel(a,d){a=Math.max(1,a);d=Math.max(1,d);let s=0;for(let i=0;i<=Math.ceil(a);i++){let below=0;for(let j=0;j<i&&j<=Math.ceil(d);j++)below+=pExact(d,j);s+=pExact(a,i)*below}return s}
+function pTieDuel(a,d){let s=0;for(let i=0;i<=Math.ceil(Math.max(a,d));i++)s+=pExact(a,i)*pExact(d,i);return s}
 const pct=x=>Math.round(x*100)+'%';
 
 // ===================== Ruoli, scenari, moduli =====================
@@ -1097,6 +1141,13 @@ function showDice(label,dice,diff,succ,plain){const g=document.createElement('di
   else if(!plain)res=`<span>${tr('dice.succ',{n:succ})}</span>`;
   g.innerHTML=`<div class="lb"><span>${label}</span>${res}</div><div class="ds">${dice.map(v=>`<div class="die ${plain?'n':v>=4?'s':v===1?'o':''}">${v}</div>`).join('')}</div>`;
   const D=document.getElementById('dice');D.prepend(g);while(D.children.length>16)D.lastChild.remove()}
+function showRoll(label,u,p,succ,m){const g=document.createElement('div');g.className='dg';
+  let res,bar='';
+  if(p==null){res=`<span>${tr('dice.succ',{n:succ})}</span>`}
+  else{const ok=m>=0,th=Math.round(p*100);res=`<span class="${ok?'res-ok':'res-ko'}">${u} ${ok?'≤':'>'} ${th} ${ok?'✓':'✗'}</span>`;
+    bar=`<div class="pbar"><div class="pfill" style="width:${th}%"></div><div class="pmark" style="left:${u}%"></div></div><div class="ptxt">${tr('dice.chance',{p:th})}${m>0?tr('dice.margin',{n:m}):m<-1?tr('dice.marginKo',{n:-m}):''}</div>`}
+  g.innerHTML=`<div class="lb"><span>${label}</span>${res}</div>${bar}`;
+  const D=document.getElementById('dice');D.prepend(g);while(D.children.length>16)D.lastChild.remove()}
 function toast(s,team){if(FASTM())return;const T=document.getElementById('toast');T.innerHTML='';const d=document.createElement('div');
   d.innerHTML=team?`<span class="dot" style="background:var(--${team});margin-right:8px"></span>${s}`:s;T.appendChild(d)}
 const wait=ms=>FASTM()?Promise.resolve():new Promise(r=>setTimeout(r,ms));
@@ -1129,15 +1180,16 @@ const precPool=(p,m)=>m==='giro'?Math.max(p.st.tiroPrec,p.st.lancio):m?Math.max(
 // Tiro a giro: solo da fuori area, tra 16 e 36 m
 let GIRO_EFF=1;const GIRO_MIN=8,GIRO_MAX=18,GIRO_Z=[0,2,3,5];
 const canGiro=p=>{const d=dG(p,p.team);return d>=GIRO_MIN&&d<=GIRO_MAX&&!inAreaOf(p,other(p.team))};
-const giroPow=p=>Math.max(1,Math.ceil((p.st.tiroPot+p.st.lancio)/2)-2-Math.floor(dG(p,p.team)/10));
-const precDiff=(p,z,extra)=>1+Math.floor(dG(p,p.team)/8)+pressure(p)+extra+(z&&z.r===0?1:0);
+const giroPow=p=>Math.max(1,Math.ceil((p.st.tiroPot+p.st.lancio)/2)-2-Math.max(0,(dG(p,p.team)-5)/10));
+// difficoltà continua (al centro di ogni vecchio gradino vale come prima)
+const precDiff=(p,z,extra)=>1+Math.max(0,(dG(p,p.team)-3.5)/8)+pressure(p)+extra+(z&&z.r===0?1:0);
 function chooseZone(p,piatto,extra=0,penalty=false,giro=false){return new Promise(res=>{const d=dG(p,p.team),pp=precPool(p,giro?'giro':piatto);
   const lo=penalty?1:precDiff(p,ZONES[4],extra),hi=penalty?2:precDiff(p,ZONES[0],extra);
   const info=tr(penalty?'zone.infoPen':'zone.info',{m:d*2,n:pp,lo,plo:pct(pAtLeast(pp,lo))})+(piatto?tr('zone.infoPiatto',{pot:piattoPow(p)}):tr('zone.infoHigh',{hi,phi:pct(pAtLeast(pp,hi))}))+(giro?tr('zone.infoGiro',{pot:giroPow(p)}):'')+tr('zone.infoV');
   const B=openModal(tr(penalty?'zone.titlePen':giro?'zone.titleGiro':piatto?'zone.titlePiatto':'zone.title'),`<div class="hint">${info}</div>`,'zones');
   ZONES.forEach((z,i)=>{if((piatto&&z.r===0)||(giro&&!GIRO_Z.includes(i))){B.appendChild(document.createElement('div'));return}
-    const pz=penalty?pAtLeast(pp,1+(z.r===0?1:0)):pAtLeast(pp,precDiff(p,z,extra));
-    const b=document.createElement('button');b.innerHTML=`${zn(z)}<br><small>${tr('zone.prob',{p:pct(pz)})} · +${z.v}</small>`;b.style.background=probCol(pz,.55);b.style.borderColor=probCol(pz,1);
+    const pz=penalty?pAtLeast(pp,1+(z.r===0?1:0)):pAtLeast(pp,precDiff(p,z,extra));const xg=penalty?null:estShot(p,p,z,giro?'giro':piatto,extra);
+    const b=document.createElement('button');b.innerHTML=`${zn(z)}<br><small>${tr('zone.prob',{p:pct(pz)})}${xg!=null?' · '+tr('zone.goal',{g:pct(xg)}):''}</small>`;b.style.background=probCol(pz,.55);b.style.borderColor=probCol(pz,1);
     b.onclick=()=>{closeModal();res(z)};B.appendChild(b)})})}
 function pickTarget(p,kind,extra,msg){return new Promise(res=>{UI.wait={p,kind,extra,msg,resolve:res};G.busy=false;render()})}
 function tRange(k,p){if(G.restart&&p&&G.restart.kicker===p.id&&G.restart.type==='laterale')return 10;return k==='lancio'?45:k==='diretto'?dirRange(p):20}
@@ -1147,17 +1199,17 @@ function validTarget(tg,h){if(!inField(h)||same(h,tg.p))return false;
   if(tg.now){const q=playerAt(h);if(q&&q.team!==tg.p.team)return false;return hd(tg.p,h)<=tRange('diretto',tg.p)}
   return hd(tg.p,h)<=tRange(tg.kind,tg.p)}
 const INT={leggero:{mod:-1,f:4,y:99,r:99},medio:{mod:0,f:3,y:4,r:99},forte:{mod:2,f:2,y:3,r:4},tattico:{}};
-function chooseIntensity(def,att){const ang=angDiff(angTo(att,def),dirAng(att.f)),behind=ang>90;
-  const rush=!!(G.act&&G.act.p===def&&G.act.moved&&def.state==='corsa'),b=(behind?1:0)+(rush&&ang>30?1:0),rm=(rush?1:0)+(behind?2:0);
-  const th=v=>v>=99?'—':Math.max(1,v-b);
-  const opt=k=>{const I=INT[k];return{k,t:tr('int.opt',{n:tr('int.'+k),d:Math.max(1,def.st.contrasto+I.mod-rm),f:th(I.f),y:th(I.y),r:th(I.r)})}};
-  return choose(tr('int.title',{p:nm(def)}),`<div class="hint">${behind?tr('int.behind'):''}${rush?tr('int.rush'):''}${tr('int.info',{c:def.st.contrasto,d:att.st.dribbling,p:nm(att)})}</div>`,
+function chooseIntensity(def,att,bonus=0){const ang=angDiff(angTo(att,def),dirAng(att.f)),behind=ang>90;
+  const rush=!!(G.act&&G.act.p===def&&G.act.moved&&def.state==='corsa');
+  const opt=k=>{const O=tackleOdds(def,att,k,!!bonus,bonus,rush),f=O.foul+O.yellow+O.red,cards=O.yellow+O.red;
+    return{k,t:tr('int.opt2',{n:tr('int.'+k),w:pct(O.def),t:pct(O.tie),l:pct(O.att),f:pct(f)})+(cards>=0.005?tr('int.cards',{c:pct(cards)}):'')}};
+  return choose(tr('int.title',{p:nm(def)}),`<div class="hint">${behind?tr('int.behind'):''}${rush?tr('int.rush'):''}${tr('int.info2',{p:nm(att)})}</div>`,
     [opt('leggero'),opt('medio'),opt('forte'),{k:'tattico',t:tr('int.tattico')}])}
 function humanPlace(team,data){return new Promise(res=>{UI.placeWait={team,res,R:data.R};UI.placeSel=null;G.busy=false;render()})}
 async function ask(team,kind,data){
   if(isAI(team))return aiDecide(team,kind,data);
   switch(kind){
-    case'intensity':return chooseIntensity(data.def,data.att);
+    case'intensity':return chooseIntensity(data.def,data.att,data.bonus||0);
     case'carica':{const com=data.committed.map(nm);const info=`<div class="hint">${tr('car.committed',{l:com.length?com.join(', '):tr('car.nobody')})}</div>`;
       return data.type==='tiro'?choose(tr('car.titleTiro',{p:nm(data.p)}),info,[{k:'go',t:tr('car.shoot')},...(canGiro(data.p)?[{k:'giro',t:tr('car.giro')}]:[]),{k:'finta',t:tr('car.finta')}])
         :choose(tr('car.titleLancio',{p:nm(data.p)}),info,[{k:'go',t:tr('car.launch')},{k:'finta',t:tr('car.finta')}])}
@@ -1252,7 +1304,7 @@ async function actPiatto(a,z){const p=a.p;
 async function actCarica(a,type){G.carica={id:a.p.id,type};sub(tr(type==='tiro'?'sub.chargeShot':'sub.chargeLaunch',{p:nm(a.p)}),a.p.team);ev('carica',{kind:type});a.p.state='fermo';log(tr(type==='tiro'?'log.caricaTiro':'log.caricaLancio',{p:nm(a.p)}));await endActivation()}
 async function actDribble(a,o){const p=a.p;const beyond={q:2*o.q-p.q,r:2*o.r-p.r};let res;G.busy=true;UI.mode=null;render();
   if(isSb(o)){log(tr('log.dribbleFree',{p:nm(o)}));res='att'}
-  else{const k=await ask(o.team,'intensity',{def:o,att:p});const bonus=a.moved&&p.state==='corsa'?1:0;res=await tackle(o,p,k,true,bonus)}
+  else{const bonus=a.moved&&p.state==='corsa'?1:0;const k=await ask(o.team,'intensity',{def:o,att:p,bonus});res=await tackle(o,p,k,true,bonus)}
   ev('dribble',{out:res,by:p.tpl,team:p.team});G.busy=false;
   if(res==='att'){p.q=beyond.q;p.r=beyond.r;p.f=dirTo(p,tgt(p.team));a.moved=a.used=true;a.rem=0;p.moved=true;log(tr('log.dribbleOk',{p:nm(p),o:nm(o)}));sub(tr('sub.dribbleOk',{p:nm(p),o:nm(o)}),p.team);render();return true}
   if(await settle()==='ok'&&!G.over)await endActivation();else render();return false}
@@ -1311,16 +1363,16 @@ function rebound(h,dirs,why,team){const v=rollD6(tr('dice.rebDir'));const dir=di
 function pickUp(p){const diff=1+pressure(p);const r=roll(p.st.stop,tr('dice.stop',{p:nm(p)}),diff);
   if(r.succ>=diff)gainBall(p,tr('why.pick'));else{log(tr('log.noControl',{p:nm(p)}));G.ball.pos=null;rebound(p,null,tr('sub.noControl',{p:nm(p)}),p.team)}}
 function passInfo(p,h,kind,extra=0){const d=hd(p,h);let pool,diff,mult;
-  if(kind==='lancio'){pool=p.st.lancio;diff=d<=20?2:3;mult=d<=20?2:3}
-  else if(kind==='diretto'){pool=d<=10?p.st.passCorto:p.st.passLungo;diff=1+Math.floor(d/6);mult=d<=10?1:2}
-  else if(d<=10){pool=p.st.passCorto;diff=1;mult=1}else{pool=p.st.passLungo;diff=2;mult=2}
+  const wl=Math.max(0,Math.min(1,(d-8)/4)),pp=(1-wl)*p.st.passCorto+wl*p.st.passLungo;
+  if(kind==='lancio'){pool=p.st.lancio;diff=Math.max(2,Math.min(3.5,1.5+d/20));mult=d<=20?2:3}
+  else if(kind==='diretto'){pool=pp;diff=Math.max(1,0.5+d/6);mult=d<=10?1:2}
+  else{pool=pp;diff=1+Math.max(0,Math.min(1.5,(d-6)/12));mult=d<=10?1:2}
   const pr=pressure(p),fr=inFront(p,h)?0:1;diff+=pr+fr+extra;
   return{d,pool,diff,mult,pr,fr,prob:pAtLeast(pool,diff)}}
 
 // Intercetto: 2d6 per toccare la palla, poi Stop per controllarla
 const P2D6=n=>n<=2?1:n>12?0:[0,0,36,35,33,30,26,21,15,10,6,3,1][n]/36;
-function roll2d6(label,need){const a=d6(),b=d6(),s=a+b,ok=s>=need;
-  if(!FASTM())showDice(label+` · 2d6 ≥ ${need}: ${s} ${ok?'✓':'✗'}`,[a,b],null,null,true);return{s,ok}}
+function roll2d6(label,need){return{ok:chance(P2D6(need),label)}}
 function interceptInfo(o,p,h,I,air){const dd=hd(o,h);if(dd>1)return null;const good=o.st.intercetto>=4,close=hd(p,h)<=2;
   const fast=!air&&I.d>10,stop=Math.max(1,o.st.stop-(fast?1:0));
   if(dd===0){const need=good?5:6;return{on:true,need,close:false,p:P2D6(need),canCtrl:inFront(o,p),stop}}
@@ -1397,20 +1449,22 @@ function shotGeo(from,team,z,giro=false){const tg=zoneHex(z,team),goal=tgt(team)
     const beaten=hd(gk,goal)>=hd(from,goal);
     gkInfo={none:false,md,out,beaten,empty:beaten||(md>=3&&mc>=3),piaz:mc===0?-1:mc===1?0:mc===2?1:2,adv:out>=3}}
   return{tgt:tg,path,blockers,cover:high?0:Math.min(2,cover),gk:gkInfo}}
-const proxBonus=d=>d<=3?3:d<=5?2:d<=6?1:0;
+const proxBonus=d=>Math.max(0,Math.min(3,3-(d-3.5)*0.8));
+const distMalus=d=>Math.max(0,(d-12.5)/5);
+const shotPow=(p,d)=>Math.max(1,p.st.tiroPot-Math.max(0,(d-5)/10));
 async function resolveShot(p,z,extra,piatto,kind){const team=p.team,def=other(team);const giro=piatto==='giro';if(giro)piatto=false;
   const d=dG(p,team),pd=precDiff(p,z,extra);const xg=estShot(p,p,z,giro?'giro':piatto,extra);
   log(tr(giro?'log.shotGiro':piatto?'log.shotPiatto':'log.shot',{p:nm(p),z:zn(z).toLowerCase(),m:d*2}));if(giro)sub(tr('sub.giro',{p:nm(p)}),team);G.ball={holder:null,pos:null,flight:null};G.lastTouch=team;
   const SE=out=>ev('shot',{kind:kind||(giro?'giro':piatto?'piatto':'tiro'),d,xg:+xg.toFixed(3),out,by:p.tpl,zone:z.k,team});
   const P=roll(precPool(p,giro?'giro':piatto),tr(giro?'dice.precGiro':piatto?'dice.precPiatto':'dice.prec',{p:nm(p)}),pd);const m=P.succ-pd;
-  const PW=roll(giro?giroPow(p):piatto?piattoPow(p):Math.max(1,p.st.tiroPot-Math.floor(d/10)),tr(giro?'dice.powGiro':piatto?'dice.powPiatto':'dice.pow',{p:nm(p)}),null);
+  const PW=roll(giro?giroPow(p):piatto?piattoPow(p):shotPow(p,d),tr(giro?'dice.powGiro':piatto?'dice.powPiatto':'dice.pow',{p:nm(p)}),null);
   const geo=shotGeo(p,team,z,giro);const fast=!piatto&&!giro;
   for(const b of geo.blockers){const o=b.o;
     if(b.wall){if(m>=(giro?1:2)){log(tr('log.overWall',{p:nm(o)}));continue}
-      const r=roll(o.st.intercetto-(giro?2:1),tr('dice.wallJump',{p:nm(o)}),2);if(r.succ<2||(!giro&&rollD6(tr('dice.wallTiming',{p:nm(o)}))===1)){log(tr('log.overWall',{p:nm(o)}));continue}
+      const r=roll(o.st.intercetto-(giro?2:1),tr('dice.wallJump',{p:nm(o)}),2);if(r.succ<2||(!giro&&chance(1/6,tr('dice.wallTiming',{p:nm(o)})))){log(tr('log.overWall',{p:nm(o)}));continue}
       G.lastTouch=def;await animBall(px(o),{});log(tr('log.deflected',{p:nm(o)}));SE('murato');return deflect(o,'murato',o,0,tr('sub.blocked',{p:nm(o)}))}
     if(b.dd===0){if(m>=2){log(tr('log.shotGap',{p:nm(o)}));continue}
-      if(rollD6(tr('dice.legs',{p:nm(o)}))===6){log(tr('log.throughLegs'));continue}}
+      if(chance(1/6,tr('dice.legs',{p:nm(o)}))){log(tr('log.throughLegs'));continue}}
     const r=roll(o.st.intercetto-(b.dd===1?1:0),tr(b.dd?'dice.close':'dice.block',{p:nm(o)}),2);
     if(b.dd===0||r.succ>=1){G.lastTouch=def;await animBall(px(o),{});
       if(r.succ>=2){log(tr('log.blocked',{p:nm(o)}));SE('murato');return deflect(o,'murato',o,0,tr('sub.blocked',{p:nm(o)}))}
@@ -1425,7 +1479,7 @@ async function resolveShot(p,z,extra,piatto,kind){const team=p.team,def=other(te
   const gk=gkVs(team),gi=geo.gk;
   if(gi.none||gi.empty){await animBall(M(zone),{fast});SE('gol');
     return goalScored(team,tr(gi.none?'res.goalNoGk':gi.down?'res.goalGkDown':gi.beaten?'res.goalGkBeaten':'res.goalEmpty',{p:nm(p),c:clock()}))}
-  const dm=Math.floor(Math.max(0,d-10)/5),advMod=gi.adv?(zone.r===0?2:-1):0,prox=proxBonus(d),eff=giro?GIRO_EFF:0;
+  const dm=distMalus(d),advMod=gi.adv?(zone.r===0?2:-1):0,prox=proxBonus(d),eff=giro?GIRO_EFF:0;
   const pdiff=Math.max(0,PW.succ+zone.v+geo.cover+gi.piaz+advMod+prox+eff-dm);
   log(tr('log.saveDiff',{n:pdiff,pw:PW.succ,z:zone.v})+(geo.cover?tr('log.sdCover',{n:geo.cover}):'')+tr(gi.piaz>=0?'log.sdPosPlus':'log.sdPosMinus',{n:Math.abs(gi.piaz)})
     +(advMod>0?tr('log.sdLob'):advMod<0?tr('log.sdAtGk'):'')+(prox?tr('log.sdProx',{n:prox}):'')+(eff?tr('log.sdGiro',{n:eff}):'')+(dm?tr('log.sdDist',{n:dm}):'')+'.');
@@ -1444,21 +1498,39 @@ function foul(def,att,card){let red=card==='rosso';
   sub(tr('sub.foul',{d:nm(def),a:nm(att),r:tr(area?'rn.rigore':'rn.punizione').toLowerCase()})+(card?' · '+tr('sub.card',{c:tr(red&&card!=='rosso'?'card.doubleYellow':'card.'+card)}):''),att.team);
   ev('foul',{by:def.tpl,team:def.team,card:red?'rosso':(card||''),area});
   if(red){log(tr('log.sentOff',{p:nm(def)}));G.players=G.players.filter(x=>x!==def);if(!FASTM())buildPlayers()}}
+// Probabilità esatte del duello (stesse dei vecchi dadi): ogni dado del difensore è successo (1/2), 1 (1/6) o altro (1/3);
+// il fallo dipende dal numero di 1. Restituisce {def,tie,att,foul,yellow,red} (fallo semplice, giallo, rosso separati).
+function tackleOdds(def,att,k,isDribble,bonus=0,rush=false){const ang=angDiff(angTo(att,def),dirAng(att.f)),behind=ang>90,side=ang>30;
+  const b=(behind?1:0)+(rush&&side?1:0),rm=(rush?1:0)+(behind?2:0);const I=INT[k]||INT.medio;
+  const nD=Math.max(1,def.st.contrasto+I.mod-rm),nA=Math.max(1,att.st.dribbling+bonus),f=I.f-b,y=I.y-b,r=I.r-b;
+  const res={def:0,tie:0,att:0,foul:0,yellow:0,red:0};const fact=n=>{let v=1;for(let i=2;i<=n;i++)v*=i;return v};
+  for(let s=0;s<=nD;s++)for(let o=0;o+s<=nD;o++){const rest=nD-s-o;const pr=fact(nD)/(fact(s)*fact(o)*fact(rest))*Math.pow(1/2,s)*Math.pow(1/6,o)*Math.pow(1/3,rest);
+    if(o>=f){if(o>=r)res.red+=pr;else if(o>=y)res.yellow+=pr;else res.foul+=pr;continue}
+    for(let a=0;a<=nA;a++){const pa=pExactI(nA,a)*pr;if(s>a)res.def+=pa;else if(s===a)res.tie+=pa;else res.att+=pa}}
+  return res}
+function showDuel(label,u,O,out){const g=document.createElement('div');g.className='dg';const seg=[['def',O.def,'#4fb3ff'],['tie',O.tie,'#9aa59f'],['att',O.att,'#f0c040'],['foul',O.foul+O.yellow+O.red,'#e05050']];
+  let acc=0;const bar=seg.map(([k,v,c])=>{const s=`<div style="position:absolute;left:${acc*100}%;width:${v*100}%;top:0;bottom:0;background:${c}"></div>`;acc+=v;return s}).join('');
+  g.innerHTML=`<div class="lb"><span>${label}</span><span class="${out==='def'?'res-ok':'res-ko'}">${u} → ${tr('duel.'+(out==='giallo'||out==='rosso'?'foul':out))}</span></div><div class="pbar" style="position:relative">${bar}<div class="pmark" style="left:${u}%"></div></div>
+    <div class="ptxt">${tr('duel.line',{d:pct(O.def),t:pct(O.tie),a:pct(O.att),f:pct(O.foul+O.yellow+O.red)})}</div>`;
+  const D=document.getElementById('dice');D.prepend(g);while(D.children.length>16)D.lastChild.remove()}
 async function tackle(def,att,k,isDribble,bonus=0,rush=false){
   const ang=angDiff(angTo(att,def),dirAng(att.f)),behind=ang>90,side=ang>30;
   // In corsa: -1 dado; se arrivi di lato o da dietro anche più rischio di fallo
   const b=(behind?1:0)+(rush&&side?1:0),rm=(rush?1:0)+(behind?2:0);
-  if(k==='tattico'){const v=rollD6(tr('dice.tactical'));foul(def,att,v>=4?'giallo':null);return'foul'}
-  const I=INT[k]||INT.medio;const D=roll(Math.max(1,def.st.contrasto+I.mod-rm),tr('dice.tackle',{p:nm(def),i:tr('int.'+k).toLowerCase()})+(behind?tr('dice.behind'):side&&rush?tr('dice.side'):'')+(rush?tr('dice.rush'):''),null);
-  const A=roll(att.st.dribbling+bonus,tr(isDribble?'dice.dribble':'dice.protect',{p:nm(att)})+(bonus?tr('dice.momentum'):''),null);
-  if(D.ones>=I.f-b){const card=D.ones>=I.r-b?'rosso':D.ones>=I.y-b?'giallo':null;foul(def,att,card);return'foul'}
-  if(D.succ>A.succ){G.subWhy=tr('sub.tackleWon',{d:nm(def),a:nm(att)});gainBall(def,tr('why.tackle'));return'def'}
-  if(D.succ===A.succ){log(tr('log.tackleTie'));G.lastTouch=def.team;rebound(att,null,tr('sub.contested'));return'tie'}
+  if(k==='tattico'){foul(def,att,chance(0.5,tr('dice.tactical'))?'giallo':null);return'foul'}
+  const O=tackleOdds(def,att,k,isDribble,bonus,rush),u=d100(),lb=tr('dice.duel',{d:nm(def),a:nm(att),i:tr('int.'+k).toLowerCase()})+(behind?tr('dice.behind'):side&&rush?tr('dice.side'):'')+(rush?tr('dice.rush'):'')+(bonus?tr('dice.momentum'):'');
+  // fasce: vince il difensore | pari | vince l'attaccante | fallo (giallo, rosso)
+  const c1=O.def,c2=c1+O.tie,c3=c2+O.att,c4=c3+O.foul,c5=c4+O.yellow,x=(u-0.5)/100;
+  const out=x<c1?'def':x<c2?'tie':x<c3?'att':x<c4?'foul':x<c5?'giallo':'rosso';
+  if(!FASTM())showDuel(lb,u,O,out);
+  if(out==='foul'||out==='giallo'||out==='rosso'){foul(def,att,out==='foul'?null:out);return'foul'}
+  if(out==='def'){G.subWhy=tr('sub.tackleWon',{d:nm(def),a:nm(att)});gainBall(def,tr('why.tackle'));return'def'}
+  if(out==='tie'){log(tr('log.tackleTie'));G.lastTouch=def.team;rebound(att,null,tr('sub.contested'));return'tie'}
   def.sbUntil=G.turn+1;log(tr('log.tackleLost',{a:nm(att),d:nm(def)}));if(!isDribble)sub(tr('sub.tackleLost',{a:nm(att),d:nm(def)}),att.team);return'att'}
 async function finta(p){const com=G.players.filter(q=>q.team!==p.team&&q.committed&&!isSb(q));
   if(!com.length)log(tr('log.fintaNone'));
-  for(const q of com){const a=roll(p.st.finta,tr('dice.finta',{p:nm(p)}),null),b=roll(q.st.lettura,tr('dice.lettura',{p:nm(q)}),null);
-    if(a.succ>b.succ){q.sbUntil=G.turn+1;log(tr('log.fintaOk',{p:nm(q)}));sub(tr('sub.fintaOk',{p:nm(q)}),p.team)}else{log(tr('log.fintaKo',{p:nm(q)}));sub(tr('sub.fintaKo',{p:nm(q)}),q.team)}}
+  for(const q of com){const ok=chance(pWinDuel(p.st.finta,q.st.lettura),tr('dice.fintaVs',{p:nm(p),q:nm(q)}));
+    if(ok){q.sbUntil=G.turn+1;log(tr('log.fintaOk',{p:nm(q)}));sub(tr('sub.fintaOk',{p:nm(q)}),p.team)}else{log(tr('log.fintaKo',{p:nm(q)}));sub(tr('sub.fintaKo',{p:nm(q)}),q.team)}}
   ev('finta',{n:com.length});render()}
 
 // ===================== Movimento automatico di squadra (11 contro 11) =====================
@@ -1622,15 +1694,17 @@ function openDist(h,team){let m=9;for(const o of G.players)if(o.team!==team){con
 function mateDist(h,p){let m=9;for(const o of G.players)if(o.team===p.team&&o!==p){const d=hd(o,h);if(d<m)m=d}return m}
 function laneClear(from,to,team){const L=line(from,to);for(let i=1;i<L.length-1;i++)for(const o of G.players)if(o.team!==team&&!isSb(o)&&hd(o,L[i])<=1)return false;return true}
 function estShot(p,h,z,piatto,extra=0){const team=p.team,d=dG(h,team);const giro=piatto==='giro';if(giro)piatto=false;if(piatto&&(d>PIATTO_MAX||z.r===0))return 0;
-  const pd=1+Math.floor(d/8)+pressAt(h,team)+extra+(z.r===0?1:0);
+  const pd=1+Math.max(0,(d-3.5)/8)+pressAt(h,team)+extra+(z.r===0?1:0);
   const P0=precPool(p,giro?'giro':piatto);let pr=pAtLeast(P0,pd);const geo=shotGeo(h,team,z,giro);
   if(giro)pr=pAtLeast(P0,pd)+(pAtLeast(P0,pd-1)-pAtLeast(P0,pd))*0.5*0.5;
   for(const b of geo.blockers){if(b.wall){pr*=1-pAtLeast(b.o.st.intercetto-(giro?2:1),2)*(giro?1:5/6)*(1-pAtLeast(P0,pd+(giro?1:2)));continue}const pi=b.o.st.intercetto-(b.dd===1?1:0);pr*=b.dd===0?0.17:Math.pow(0.5,Math.max(1,pi))}
   const gi=geo.gk;if(gi.none||gi.empty)return pr*0.97;
-  const pot=giro?giroPow(p):piatto?piattoPow(p):Math.max(1,p.st.tiroPot-Math.floor(d/10));
-  const dm=Math.floor(Math.max(0,d-10)/5),adv=gi.adv?(z.r===0?2:-1):0;
-  const k=Math.max(0,Math.round(pot/2)+z.v+geo.cover+gi.piaz+adv+proxBonus(d)+(giro?GIRO_EFF:0)-dm);
-  const gk=gkVs(team);return (k<=0||!gk?0:pr*(1-pAtLeast(gk.st.riflessi,k)))*(giro?0.75:1)}
+  const pot=giro?giroPow(p):piatto?piattoPow(p):shotPow(p,d);
+  const rest=z.v+geo.cover+gi.piaz+(gi.adv?(z.r===0?2:-1):0)+proxBonus(d)+(giro?GIRO_EFF:0)-distMalus(d);
+  const gk=gkVs(team);if(!gk)return pr;
+  // potenza: distribuzione esatta dei successi, poi parata (il portiere para se raggiunge la soglia)
+  let ns=0;for(let k=0;k<=Math.ceil(pot);k++){const pdf=Math.max(0,k+rest);ns+=pExact(pot,k)*(pdf<=0?0:1-pAtLeast(gk.st.riflessi,pdf))}
+  return pr*ns*(giro?0.75:1)}
 function bestShot(p,h,piatto,extra=0,zones=ZONES){let best={xg:0,z:ZONES[3]};for(const z of zones){const x=estShot(p,h,z,piatto,extra);if(x>best.xg)best={xg:x,z}}return best}
 const FASTZ=[ZONES[0],ZONES[2],ZONES[3],ZONES[5]];
 const xgFast=(p,h)=>dG(h,p.team)>22?0:bestShot(p,h,false,0,FASTZ).xg;
@@ -1904,7 +1978,7 @@ function saveScen(){const B=openModal(tr('ed.saveTitle'),`<div class="hint">${tr
     const sc=scenFromG(n);SAVED.push(sc);const ok=storeSaved(SAVED);closeModal();CUSTOM=sc;populateSelect('s'+(SAVED.length-1));
     toast(tr(ok?'ed.saved':'ed.notSaved'))};B.append(x,c);setTimeout(()=>{const i=document.getElementById('svName');if(i)i.focus()},50)}
 
-const MODEK='calcioTattico.modalita';const VERSION='v0.9.6';
+const MODEK='calcioTattico.modalita';const VERSION='v1.0';
 // ===================== Menu contestuale (partita) =====================
 const wrap=document.getElementById('svgWrap'),ctx=document.getElementById('ctx'),tip=document.getElementById('tip'),svg=document.getElementById('field'),mini=document.getElementById('mini');
 function toLocal(pt){const m=svg.getScreenCTM&&svg.getScreenCTM();if(!m)return{x:0,y:0};const P=svg.createSVGPoint();P.x=pt.x;P.y=pt.y;
@@ -1937,8 +2011,8 @@ function availableActions(a){const p=a.p,hold=isHolder(p),out=[];const rs=restri
     if(!NOMOVE.includes(rs)){const gd=dG(p,p.team);if(gd<=PIATTO_MAX)out.push({k:'piatto',ic:'◔',lb:tr('menu.piatto'),h:tr('menu.piattoNow',{m:gd*2,n:piattoPow(p)}),cls:'now'})}
     if(firstAction(a)&&rs!=='laterale'&&rs!=='inizio'){out.push({k:'cLancio',ic:'⤴',lb:tr(rs==='angolo'?'menu.cross':'menu.launch'),h:tr('menu.chargeH'),cls:'warn'});
       if(!rs||rs==='punizione')out.push({k:'cTiro',ic:'◎',lb:tr('menu.chargeShot'),h:tr('menu.chargeShotH',{m:dG(p,p.team)*2}),cls:'warn'})}
-    if((!a.moved||a.rem>=2)&&!rs&&dribbleTargets(p).length){const mo=a.moved&&p.state==='corsa';out.push({k:'dribble',ic:'✦',lb:tr('menu.dribbling'),h:tr('menu.dribblingH',{n:p.st.dribbling+(mo?1:0)})+(mo?tr('menu.momentum'):'')})}}
-  if(canTackle(p)){const h=holderP();out.push({sep:1});const ru=a.moved&&p.state==='corsa';const bh=angDiff(angTo(h,p),dirAng(h.f))>90;out.push({k:'tackle',ic:'⚔',lb:tr(p.gk?'menu.gkOut':'menu.tackle'),h:tr('menu.tackleH',{a:Math.max(1,p.st.contrasto-(ru?1:0)-(bh?2:0)),b:h.st.dribbling})+(ru?tr('menu.rushH'):'')+(bh?tr('menu.behindH'):''),cls:'warn'})}
+    if((!a.moved||a.rem>=2)&&!rs&&dribbleTargets(p).length){const mo=a.moved&&p.state==='corsa';out.push({k:'dribble',ic:'✦',lb:tr('menu.dribbling'),h:tr('menu.dribblingH2',{p:pct(Math.max(...dribbleTargets(p).map(o=>{const O=tackleOdds(o,p,'medio',true,mo?1:0,false);return isSb(o)?1:O.att+O.foul+O.yellow+O.red})))})+(mo?tr('menu.momentum'):'')})}}
+  if(canTackle(p)){const h=holderP();out.push({sep:1});const ru=a.moved&&p.state==='corsa';const bh=angDiff(angTo(h,p),dirAng(h.f))>90;out.push({k:'tackle',ic:'⚔',lb:tr(p.gk?'menu.gkOut':'menu.tackle'),h:tr('menu.tackleH2',{w:pct(tackleOdds(p,h,'medio',false,0,ru).def)})+(ru?tr('menu.rushH'):'')+(bh?tr('menu.behindH'):''),cls:'warn'})}
   out.push({sep:1});out.push({k:'end',ic:'✓',lb:tr(!a.used?'menu.stayStill':hold?'menu.keep':'menu.done'),h:'',cls:'go'});
   if(!a.used)out.push({k:'cancel',ic:'✕',lb:tr('menu.cancel'),h:''});
   return out}
@@ -2209,7 +2283,10 @@ function renderCard(){const C=document.getElementById('card');
 function updateTip(e){const h=UI.hover;let s='';
   if(h&&inField(h)&&ctx.classList.contains('hidden')&&!isEdit()){const tm=targetMode(),a=G.act;
     if(tm&&validTarget(tm,h)){const I=passInfo(tm.p,h,tm.now?'diretto':tm.kind,tm.extra);const off=(tm.kind!=='lancio')?offsideIds(tm.p.team):[];const rc=playerAt(h);
-      s=`<b>${tr(tm.kind==='lancio'?'tip.launch':tm.now?'tip.now':'tip.space')} · ${I.d*2} m</b><br>${tr('tip.dice',{n:I.pool,d:I.diff})}${I.pr?tr('tip.pressed'):''}${I.fr?tr('tip.outArc'):''}${tm.extra?tr('tip.finta'):''}<br>${tr('tip.precise',{p:pct(I.prob),m:I.mult*2})}${tm.kind==='lancio'&&I.d>22?'<br>'+tr('tip.nextTurn'):''}${rc&&off.includes(rc.id)?'<br><b style="color:#ffe066">'+tr('tip.offside')+'</b>':''}`}
+      s=`<b>${tr(tm.kind==='lancio'?'tip.launch':tm.now?'tip.now':'tip.space')} · ${I.d*2} m</b><br>${tr('tip.precise',{p:pct(I.prob),m:I.mult*2})}${(()=>{const c=passClear(tm.p,h,tm.now?'diretto':tm.kind,tm.extra);return c<0.995?'<br>'+tr('tip.clear',{c:pct(c)}):''})()}${I.pr?'<br>'+tr('tip.pressed'):''}${I.fr?tr('tip.outArc'):''}${tm.extra?tr('tip.finta'):''}${tm.kind==='lancio'&&I.d>22?'<br>'+tr('tip.nextTurn'):''}${rc&&off.includes(rc.id)?'<br><b style="color:#ffe066">'+tr('tip.offside')+'</b>':''}`}
+    else if(a&&UI.mode==='dribble'){const o=playerAt(h);if(o&&dribbleTargets(a.p).includes(o)){const bo=a.moved&&a.p.state==='corsa'?1:0;
+      const q=k=>{const O=tackleOdds(o,a.p,k,true,bo,false);return pct(O.att+O.foul+O.yellow+O.red)};
+      s=`<b>${tr('tip.dribble',{o:nm(o)})}</b><br>${isSb(o)?tr('tip.dribbleFree'):tr('tip.dribbleOdds',{l:q('leggero'),m:q('medio'),f:q('forte')})}`}}
     else if(a&&UI.mode==='move'&&!a.moved){const o=a.opts.get(K(h));if(o)s=`<b>${o.d*2} m</b> · ${tr('tip.cost',{c:o.cost,l:o.lim})}${o.back?tr('tip.back'):''}${!o.back&&o.d>=3?tr('tip.willRun'):''}`}
     else{const pl=playerAt(h);if(pl)s=`<b>${nm(pl)}</b>${isHolder(pl)?' · '+tr('tip.ball'):''}${pl.act&&G.phase==='att'?' · '+tr('tip.done'):''}${isSb(pl)?' · '+tr('st.unbalanced'):''}`}}
   if(!s||!e){hideTip();return}
