@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Calcio Tattico — Versione 1.2</title>
+<title>Calcio Tattico — Versione 1.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -188,11 +188,14 @@ aside{flex:none;width:100%;min-width:0;display:grid;grid-template-columns:repeat
 aside #log{max-height:260px}
 #mini.rot{width:132px}
 
+#undoBtn{background:#3a3f4a;border-color:#6b7385;color:#fff}
+#undoBtn:disabled{opacity:.4}
+
 </style>
 </head>
 <body>
 <header>
-  <h1><span data-i18n="ui.title"></span> <small>v1.2</small></h1>
+  <h1><span data-i18n="ui.title"></span> <small>v1.3.2</small></h1>
   <div class="sp"></div>
   <select id="langSel" class="hidden" aria-label="Lingua"></select>
   <select id="scn" aria-label="Scenario"></select>
@@ -223,6 +226,7 @@ aside #log{max-height:260px}
       <div class="turnof" id="bTeam"></div>
       <div class="score" id="bScore"></div>
       <button id="wallBtn" style="display:none" data-i18n="ui.wall"></button>
+      <button id="undoBtn" data-i18n="ui.undo"></button>
       <button id="endBtn" data-i18n="ui.endTurn"></button>
     </div>
     <div id="editbar">
@@ -273,6 +277,7 @@ const DICT={it:{
  'ui.summary':"Riepilogo",
  'ui.newMatch':"Nuova partita",
  'ui.wall':"Barriera",
+ 'ui.undo':"↶ Annulla",
  'ui.endTurn':"Fine turno",
  'ui.endTurnTeam':"Fine turno {team}",
  'ui.ready':"Pronto {team}",
@@ -788,6 +793,12 @@ const DICT={it:{
  'sum.offside':"Fuorigioco",
  'sum.lost':"Palloni persi",
  'sum.acts':"Attivazioni",
+ 'log.undo':"↶ Mossa annullata: si riprende da prima dell'ultima attivazione.",
+ 'toast.undo':"Mossa annullata",
+ 'log.tackleTry':"{d} entra in contrasto su {a} ({i}{x}).",
+ 'log.dribbleTry':"{a} punta {d}: {d} risponde con un contrasto {i}{x}.",
+ 'log.fromBehind':", alle spalle",
+ 'log.onRun':", in corsa",
  // Avvisi
  'toast.ballPhase':"Fase palla",
  'toast.turn':"Turno {n} · {who}",
@@ -1553,6 +1564,7 @@ async function tackle(def,att,k,isDribble,bonus=0,rush=false){
   // In corsa: -1 dado; se arrivi di lato o da dietro anche più rischio di fallo
   const b=(behind?1:0)+(rush&&side?1:0),rm=(rush?1:0)+(behind?2:0);
   if(k==='tattico'){foul(def,att,chance(0.5,tr('dice.tactical'))?'giallo':null);return'foul'}
+  log(tr(isDribble?'log.dribbleTry':'log.tackleTry',{d:nm(def),a:nm(att),i:tr('int.'+k).toLowerCase(),x:(behind?tr('log.fromBehind'):'')+(rush?tr('log.onRun'):'')}));
   const O=tackleOdds(def,att,k,isDribble,bonus,rush),u=d100(),lb=tr('dice.duel',{d:nm(def),a:nm(att),i:tr('int.'+k).toLowerCase()})+(behind?tr('dice.behind'):side&&rush?tr('dice.side'):'')+(rush?tr('dice.rush'):'')+(bonus?tr('dice.momentum'):'');
   // fasce: vince il difensore | pari | vince l'attaccante | fallo (giallo, rosso)
   const c1=O.def,c2=c1+O.tie,c3=c2+O.att,c4=c3+O.foul,c5=c4+O.yellow,x=(u-0.5)/100;
@@ -1842,7 +1854,13 @@ function defPlan(S,team){const key=team+'|'+G.turn+'|'+G.actCount+'|'+(G.ball.ho
     if(best){const L=line(x,protect);res[best.d.id]=L[Math.min(outnum?2:1,L.length-1)];used.add(best.d.id)}}
   for(const d of ds)if(!used.has(d.id))res[d.id]=anchor(d,ball,S,true);
   G._dp={key,t:res};return res}
-function wantTackle(p,car,S){if(S.noTackle)return false;if(S.press)return true;const bh=angDiff(angTo(car,p),dirAng(car.f))>90?2:0;return dG(car,car.team)<=16||pWinDuel(Math.max(1,p.st.contrasto-bh),car.st.dribbling)>=0.4}
+// valore di un'intensità: palla vinta conta, i falli costano (molto di più in area: rigore), i cartellini ancora di più
+function bestIntensity(def,att,bonus,rush,area,S){let best=null;const aggr=S&&S.press?0.1:0;
+  for(const k of ['leggero','medio','forte']){const O=tackleOdds(def,att,k,!!bonus,bonus,rush);
+    const v=O.def+0.35*O.tie+aggr-(area?2.5:0.5)*(O.foul+O.yellow+O.red)-0.6*O.yellow-3*O.red;if(!best||v>best.v)best={k,v,O}}
+  return best}
+function wantTackle(p,car,S){if(S.noTackle)return false;const rush=!!(G.act&&G.act.p===p&&G.act.moved&&p.state==='corsa');
+  const B=bestIntensity(p,car,0,rush,inAreaOf(car,p.team),S);if(S.press)return B.v>0.05;return B.v>(dG(car,car.team)<=16?0.05:0.2)}
 async function aiDefend(team,actors,S){const car=holderP();
   if(car){for(const p of actors)if(canTackle(p)&&wantTackle(p,car,S)){startAct(p);await actTackle(G.act);return}}
   const plan=defPlan(S,team),ball=ballHex()||kickSpot();
@@ -1871,7 +1889,8 @@ function aiPlan(team,R){const mv=[],T=R.team;
   return mv}
 function aiDecide(team,kind,data){
   switch(kind){
-    case'intensity':{const S=defS(data.def.team);return inAreaOf(data.att,data.def.team)?S.areaInt:S.intensity}
+    case'intensity':{const S=defS(data.def.team),area=inAreaOf(data.att,data.def.team);const rush=!!(G.act&&G.act.p===data.def&&G.act.moved&&data.def.state==='corsa');
+      return bestIntensity(data.def,data.att,data.bonus||0,rush,area,S).k}
     case'carica':{const S=attS(data.p.team);const c=data.committed;if(c.length&&data.p.st.finta>=Math.max(...c.map(q=>q.st.lettura)))return'finta';
       if(data.type==='tiro'){const xs=bestShot(data.p,data.p,false,0).xg,xgi=canGiro(data.p)?bestShot(data.p,data.p,'giro',0,GIRO_Z.map(i=>ZONES[i])).xg:0;
         if(Math.max(xs,xgi)<S.shootMin*0.6)return'finta';return xgi>xs?'giro':'go'}return'go'}
@@ -2013,7 +2032,7 @@ function saveScen(){const B=openModal(tr('ed.saveTitle'),`<div class="hint">${tr
     const sc=scenFromG(n);SAVED.push(sc);const ok=storeSaved(SAVED);closeModal();CUSTOM=sc;populateSelect('s'+(SAVED.length-1));
     toast(tr(ok?'ed.saved':'ed.notSaved'))};B.append(x,c);setTimeout(()=>{const i=document.getElementById('svName');if(i)i.focus()},50)}
 
-const MODEK='calcioTattico.modalita';const VERSION='v1.2';
+const MODEK='calcioTattico.modalita';const VERSION='v1.3.2';
 // ===================== Menu contestuale (partita) =====================
 const wrap=document.getElementById('svgWrap'),ctx=document.getElementById('ctx'),tip=document.getElementById('tip'),svg=document.getElementById('field'),mini=document.getElementById('mini');
 function toLocal(pt){const W0=WORLD||svg;const m=W0.getScreenCTM&&W0.getScreenCTM();if(!m)return{x:0,y:0};const P=svg.createSVGPoint();P.x=pt.x;P.y=pt.y;
@@ -2022,8 +2041,17 @@ function clientToSvg(e){const W0=WORLD||svg;const m=W0.getScreenCTM&&W0.getScree
 function canOpen(pl){if(G.busy||G.over||G.phase!=='att'||UI.wait||!pl||isAI(G.cur))return false;
   if(G.act&&G.act.p===pl)return true;
   return pl.team===G.cur&&!pl.act&&!isSb(pl)&&canAct(pl.team)&&(!G.act||!G.act.used)}
+// ===================== Annulla (fase di prova: ovunque; poi solo nelle azioni a metà campo) =====================
+const UNDO=[],UNDO_MAX=40;const undoAllowed=()=>!!G&&!G.tut&&!isEdit();
+const undoStamp=g=>g.turn+'|'+g.actCount+'|'+g.cur+'|'+g.players.map(p=>p.q+','+p.r+','+p.f).join(';')+'|'+JSON.stringify(g.ball);
+function pushUndo(){if(!undoAllowed()||G.over||G.busy||G.act)return;try{const s=structuredClone(G);const st=undoStamp(s);
+    if(UNDO.length&&UNDO[UNDO.length-1].st===st)return;UNDO.push({g:s,st});if(UNDO.length>UNDO_MAX)UNDO.shift()}catch(e){}renderUndo()}
+function renderUndo(){const b=$('undoBtn');if(!b)return;b.classList.toggle('hidden',!undoAllowed());b.disabled=!UNDO.length}
+function doUndo(){if(!UNDO.length)return;const s=UNDO.pop().g;closeModal();closeMenu();hideTip();subClear();
+  Object.assign(UI,{mode:null,wait:null,placeWait:null,placeSel:null,hover:null,hoverP:null});
+  G=s;G.busy=false;BALL.anim=null;buildPlayers();render();log(tr('log.undo'),'t');toast(tr('toast.undo'));renderUndo()}
 function openMenuFor(pl){if(!canOpen(pl)){closeMenu();return false}
-  if(!G.act||G.act.p!==pl)startAct(pl);UI.mode=null;render();openMenu(pl);return true}
+  if(!G.act||G.act.p!==pl){if(!G.act)pushUndo();startAct(pl)}UI.mode=null;render();openMenu(pl);return true}
 function showMenu(anchor,head,items,onPick){let html=head;
   for(const it of items){if(it.sep){html+='<div class="sep"></div>';continue}
     html+=`<button class="it ${it.cls||''}" data-k="${it.k}"><span class="ic">${it.ic}</span><span class="lb">${it.lb}${it.h?`<div class="h">${it.h}</div>`:''}</span></button>`}
@@ -2267,7 +2295,8 @@ function renderField(){HL.innerHTML='';FX.innerHTML='';const a=G.act;const human
   const res=document.getElementById('result');
   const rb=TUT.on?(TUT.done?(TUT.i+1<LESSONS.length?`<button onclick="lessonMenu()">${tr('tut.lessons')}</button><button class="pri" onclick="startLesson(${TUT.i+1})">${tr('res.nextLesson')}</button>`:`<button class="pri" onclick="exitTutorial()">${tr('res.tutEnd')}</button>`):`<button onclick="lessonMenu()">${tr('tut.lessons')}</button><button class="pri" onclick="startLesson(${TUT.i})">${tr('res.retry')}</button>`)
     :G.full?`<button class="pri" onclick="startMatch()">${tr('ui.newMatch')}</button>`:`<button onclick="enterEditor()">${tr('res.toEditor')}</button><button class="pri" onclick="reset()">${tr('ui.new')}</button>`;
-  res.innerHTML=G.over?`<div class="box"><h2>${G.result.title}</h2><div>${G.result.msg}</div><div class="btns" style="justify-content:center;margin-top:12px">${rb}</div></div>`:''}
+  const ub=UNDO.length&&undoAllowed()?`<button onclick="doUndo()">${tr('ui.undo')}</button>`:'';
+  res.innerHTML=G.over?`<div class="box"><h2>${G.result.title}</h2><div>${G.result.msg}</div><div class="btns" style="justify-content:center;margin-top:12px">${ub}${rb}</div></div>`:''}
 function renderBoard(){const bT=document.getElementById('bTurn'),bt=document.getElementById('bTeam'),st=document.getElementById('stage');
   bT.textContent=isEdit()?tr('ui.editor'):G.full?tr('board.half',{h:G.match.half}):tr('board.turn',{n:G.turn});document.getElementById('bTime').textContent=isEdit()?'':clock();
   const mode=isEdit()?'E':G.over?'O':G.phase==='palla'?'P':G.phase==='ferma'?'F':G.cur;bt.className='turnof '+mode;st.classList.remove('tA','tD','tE','tF');if('ADEF'.includes(mode))st.classList.add('t'+mode);
@@ -2345,12 +2374,12 @@ function renderSetup(){const c=G.ctrl;document.getElementById('mode').disabled=T
   document.getElementById('lbA').classList.toggle('hidden',c.A!=='ai');document.getElementById('lbD').classList.toggle('hidden',c.D!=='ai');
   document.getElementById('fullOpts').classList.toggle('hidden',document.getElementById('gtype').value!=='partita');
   document.getElementById('setupHint').innerHTML=TUT.on?tr('setup.hintTut'):c.A==='human'&&c.D==='human'?tr('setup.hint2p'):tr('setup.hintAI')}
-function render(){if(!G||G.fast)return;renderField();renderBoard();renderHint();renderStatus();renderCard();renderSetup();tutTick();schedule()}
+function render(){if(!G||G.fast)return;renderField();renderBoard();renderUndo();renderHint();renderStatus();renderCard();renderSetup();tutTick();schedule()}
 
 // ===================== Avvio, reset, impostazioni =====================
 function ctrlFromMode(){const m=document.getElementById('mode').value;return m==='vsD'?{A:'human',D:'ai'}:m==='vsA'?{A:'ai',D:'human'}:{A:'human',D:'human'}}
 function stratFromUI(){const a=document.getElementById('stA').value.split('|'),d=document.getElementById('stD').value.split('|');return{A:{att:a[0],def:a[1]},D:{att:d[0],def:d[1]}}}
-function reset(sc,opt){opt=opt||{};closeMenu();hideTip();subClear();clearTimeout(AIT);closeModal();if(!opt.tut&&TUT.on)TUT.on=false;
+function reset(sc,opt){opt=opt||{};closeMenu();hideTip();subClear();UNDO.length=0;clearTimeout(AIT);closeModal();if(!opt.tut&&TUT.on)TUT.on=false;
   const full=!!opt.full;if(!full&&document.getElementById('gtype').value==='partita'&&!opt.tut&&!sc){startMatch();return}
   sc=sc||currentScen();
   newGame(sc,{ctrl:opt.ctrl||ctrlFromMode(),strat:opt.strat||stratFromUI(),full,len:opt.len,maxAct:opt.maxAct});
@@ -2440,7 +2469,8 @@ const $=id=>document.getElementById(id);
 $('newBtn').onclick=()=>{if(TUT.on)startLesson(TUT.i);else if(G&&G.full)startMatch();else reset()};
 $('tutBtn').onclick=lessonMenu;
 $('scn').onchange=()=>reset();
-$('endBtn').onclick=()=>{if(UI.placeWait){const w=UI.placeWait;UI.placeWait=null;UI.placeSel=null;G.busy=true;w.res('pronto');return}if(!G.busy)passTeam(G.cur)};
+$('endBtn').onclick=()=>{if(UI.placeWait){const w=UI.placeWait;UI.placeWait=null;UI.placeSel=null;G.busy=true;w.res('pronto');return}if(!G.busy){if(!G.act)pushUndo();passTeam(G.cur)}};
+$('undoBtn').onclick=doUndo;
 $('wallBtn').onclick=()=>{if(UI.placeWait&&UI.placeWait.team!==G.sp.team){const w=UI.placeWait;UI.placeWait=null;UI.placeSel=null;G.busy=true;w.res({wall:true})}};
 $('editBtn').onclick=()=>{if(isEdit())exitEditor();else{if(TUT.on){TUT.on=false;renderCoach()}enterEditor()}};
 $('edPlay').onclick=playFromEditor;$('edSave').onclick=saveScen;$('edExport').onclick=exportScen;$('edImport').onclick=importScen;
